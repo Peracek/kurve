@@ -58,6 +58,14 @@ Kurve.Config = {
         maxSuperpowers: 6,
     },
 
+    Token: {
+        spawnIntervalMin: 5000,
+        spawnIntervalMax: 15000,
+        radius: 12,
+        effectDurationMin: 5000,
+        effectDurationMax: 10000,
+    },
+
     Sound: {
         soundPath: 'dist/sound/',
         fadeTimeOut: 60

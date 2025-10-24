@@ -41,6 +41,9 @@ Kurve.Superpowerconfig.types = {
     NO_SUPERPOWER: 'NO_SUPERPOWER',
     SHOOT_HOLES: 'SHOOT_HOLES',
     RANDOM: 'RANDOM',
+    REVERSE_CONTROLS: 'REVERSE_CONTROLS',
+    PLAYER_WRAPAROUND: 'PLAYER_WRAPAROUND',
+    GLOBAL_WRAPAROUND: 'GLOBAL_WRAPAROUND',
 };
 
 Kurve.Superpowerconfig.hooks = {
@@ -735,4 +738,37 @@ Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.RANDOM] = {
     close: function(curve) {
 
     }
+};
+
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.REVERSE_CONTROLS] = {
+    label: 'reverse controls',
+    color: '#ff00ff',
+    hooks: [],
+    audios: [],
+    helpers: {},
+    init: function(curve) {},
+    act: function(hook, curve) {},
+    close: function(curve) {}
+};
+
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.PLAYER_WRAPAROUND] = {
+    label: 'player wraparound',
+    color: '#00ffff',
+    hooks: [],
+    audios: [],
+    helpers: {},
+    init: function(curve) {},
+    act: function(hook, curve) {},
+    close: function(curve) {}
+};
+
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.GLOBAL_WRAPAROUND] = {
+    label: 'global wraparound',
+    color: '#ffff00',
+    hooks: [],
+    audios: [],
+    helpers: {},
+    init: function(curve) {},
+    act: function(hook, curve) {},
+    close: function(curve) {}
 };

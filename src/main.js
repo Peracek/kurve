@@ -25,6 +25,7 @@ import './KurveGame.js';
 import './KurveField.js';
 import './KurveSuperpower.js';
 import './KurveSuperpowerconfig.js';
+import './KurveTokenmanager.js';
 import './KurveCurve.js';
 import './KurvePoint.js';
 import './KurvePlayer.js';

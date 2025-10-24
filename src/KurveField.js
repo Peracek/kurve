@@ -31,6 +31,7 @@ Kurve.Field = {
     canvas: null,
     pixiApp: null,
     pixiCurves: null,
+    pixiTokens: null,
     pixiDebug: null,
     
     width: null,
@@ -40,6 +41,7 @@ Kurve.Field = {
     drawnPowerUps: {},
     defaultLineWidth: null,
     drawnPixelPrecision: null,
+    borderPulsePhase: 0,
     
     init: function() {
         this.initWindow();
@@ -78,12 +80,14 @@ Kurve.Field = {
             antialias: true,
             backgroundAlpha: 0,
         });
-        this.pixiCurves = new PIXI.Graphics();
         this.pixiField = new PIXI.Graphics();
+        this.pixiCurves = new PIXI.Graphics();
+        this.pixiTokens = new PIXI.Graphics();
         this.pixiDebug = new PIXI.Graphics();
 
-        this.pixiApp.stage.addChild(this.pixiCurves);
         this.pixiApp.stage.addChild(this.pixiField);
+        this.pixiApp.stage.addChild(this.pixiCurves);
+        this.pixiApp.stage.addChild(this.pixiTokens);
         this.pixiApp.stage.addChild(this.pixiDebug);
     },
     
@@ -117,14 +121,23 @@ Kurve.Field = {
         this.drawnPowerUps = {};
 
         this.pixiCurves.clear();
+        this.pixiTokens.clear();
         this.pixiDebug.clear();
     },
 
     drawField: function() {
-        var borderColor = u.stringToHex(Kurve.Theming.getThemedValue('field', 'borderColor'));
+        var globalWraparound = Kurve.TokenManager && Kurve.TokenManager.globalWraparoundActive;
+        var borderColor = globalWraparound ? 0xffff00 : u.stringToHex(Kurve.Theming.getThemedValue('field', 'borderColor'));
+        var lineWidth = 2;
+        
+        if (globalWraparound) {
+            this.borderPulsePhase += 0.1;
+            var pulse = Math.sin(this.borderPulsePhase) * 0.5 + 0.5;
+            lineWidth = 2 + pulse * 3;
+        }
 
         this.pixiField.clear();
-        this.pixiField.lineStyle(2, borderColor);
+        this.pixiField.lineStyle(lineWidth, borderColor);
         this.pixiField.drawRect(0, 0, this.width, this.height);
     },
 

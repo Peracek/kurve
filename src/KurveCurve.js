@@ -34,6 +34,11 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
     var positionX = null;
     var nextPositionY = null;
     var nextPositionX = null;
+    var controlsReversed = false;
+    var controlsReversedTimeout = null;
+    var wraparoundEnabled = false;
+    var wraparoundTimeout = null;
+    var justWrapped = false;
 
     var options = {
         stepLength: config.stepLength,
@@ -78,6 +83,32 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
     this.getNextPositionX = function() { return nextPositionX; };
     this.getOptions = function() { return options; };
     this.isInvisible = function() { return isInvisible; };
+    this.isControlsReversed = function() { return controlsReversed; };
+    this.isWraparoundEnabled = function() { return wraparoundEnabled; };
+    this.isJustWrapped = function() { return justWrapped; };
+    this.setJustWrapped = function(value) { justWrapped = value; };
+
+    this.applyReverseControls = function(duration) {
+        if (controlsReversedTimeout) {
+            clearTimeout(controlsReversedTimeout);
+        }
+        controlsReversed = true;
+        controlsReversedTimeout = setTimeout(function() {
+            controlsReversed = false;
+            controlsReversedTimeout = null;
+        }, duration);
+    };
+
+    this.applyWraparound = function(duration) {
+        if (wraparoundTimeout) {
+            clearTimeout(wraparoundTimeout);
+        }
+        wraparoundEnabled = true;
+        wraparoundTimeout = setTimeout(function() {
+            wraparoundEnabled = false;
+            wraparoundTimeout = null;
+        }, duration);
+    };
 
     this.resetHoleCountDown(); //Randomize initial hole interval
 };
@@ -107,6 +138,11 @@ Kurve.Curve.prototype.drawLine = function(field) {
 
     if ( this.useSuperpower(Kurve.Superpowerconfig.hooks.DRAW_LINE) ) {
         this.getPlayer().getSuperpower().act(Kurve.Superpowerconfig.hooks.DRAW_LINE, this);
+    }
+
+    if ( this.isJustWrapped() ) {
+        this.setJustWrapped(false);
+        return;
     }
 
     if ( this.isInvisible() ) {
@@ -196,7 +232,16 @@ Kurve.Curve.prototype.checkForCollision = function() {
 };
 
 Kurve.Curve.prototype.isCollided = function(positionX, positionY) {
-    if ( this.getField().isPointOutOfBounds(positionX, positionY) ) return true;
+    var globalWraparound = Kurve.TokenManager && Kurve.TokenManager.globalWraparoundActive;
+    var hasWraparound = this.isWraparoundEnabled() || globalWraparound;
+    
+    if ( this.getField().isPointOutOfBounds(positionX, positionY) ) {
+        if (hasWraparound) {
+            this.handleWraparound();
+            return false;
+        }
+        return true;
+    }
 
     var drawnPoint = this.getField().getDrawnPoint(positionX, positionY);
 
@@ -211,6 +256,35 @@ Kurve.Curve.prototype.isWithinSelfCollisionTimeout = function(frameId) {
     return Kurve.Game.CURRENT_FRAME_ID - frameId < this.getOptions().selfCollisionTimeoutInFrames;
 };
 
+Kurve.Curve.prototype.handleWraparound = function() {
+    var field = this.getField();
+    var nextX = this.getNextPositionX();
+    var nextY = this.getNextPositionY();
+    var wrapped = false;
+    
+    if (nextX < 0) {
+        this.setNextPositionX(field.width + nextX);
+        wrapped = true;
+    } else if (nextX > field.width) {
+        this.setNextPositionX(nextX - field.width);
+        wrapped = true;
+    }
+    
+    if (nextY < 0) {
+        this.setNextPositionY(field.height + nextY);
+        wrapped = true;
+    } else if (nextY > field.height) {
+        this.setNextPositionY(nextY - field.height);
+        wrapped = true;
+    }
+    
+    if (wrapped) {
+        this.setPositionX(this.getNextPositionX());
+        this.setPositionY(this.getNextPositionY());
+        this.setJustWrapped(true);
+    }
+};
+
 Kurve.Curve.prototype.die = function() {
     this.getPlayer().getSuperpower().getAudioPlayer().pause('all', {reset: true});
     this.getAudioPlayer().play('curve-crashed', {reset: true});
@@ -218,10 +292,20 @@ Kurve.Curve.prototype.die = function() {
 };
 
 Kurve.Curve.prototype.computeNewAngle = function() {
+    var turnDirection = this.isControlsReversed() ? -1 : 1;
+    
     if ( this.getGame().isKeyDown(this.getPlayer().getKeyRight()) ) {
-        this.incrementAngle();
+        if (turnDirection === 1) {
+            this.incrementAngle();
+        } else {
+            this.decrementAngle();
+        }
     } else if ( this.getGame().isKeyDown(this.getPlayer().getKeyLeft()) ) {
-        this.decrementAngle();
+        if (turnDirection === 1) {
+            this.decrementAngle();
+        } else {
+            this.incrementAngle();
+        }
     }
 };
     

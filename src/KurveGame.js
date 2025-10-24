@@ -49,6 +49,7 @@ Kurve.Game = {
         this.playerScoresElement = document.getElementById('player-scores');
 
         this.Audio.init();
+        Kurve.TokenManager.init();
     },
     
     run: function() {
@@ -58,10 +59,21 @@ Kurve.Game = {
     drawFrame: function() {
         this.CURRENT_FRAME_ID++;
 
+        Kurve.TokenManager.update(this.intervalTimeOut);
+        Kurve.TokenManager.checkCollisions(this.runningCurves);
+
+        if (Kurve.TokenManager.globalWraparoundActive) {
+            Kurve.Field.drawField();
+        }
+
         for (var i in this.runningCurves) {
             for (var j = 0; this.runningCurves[i] && j < this.runningCurves[i].length; ++j) {
                 this.runningCurves[i][j].drawNextFrame();
             }
+        }
+
+        if (Kurve.Field.pixiTokens) {
+            Kurve.TokenManager.draw(Kurve.Field.pixiTokens);
         }
     },
     
@@ -234,6 +246,7 @@ Kurve.Game = {
         this.runningCurves  = {};
         this.incrementSuperpowers();
         this.Audio.terminateRound();
+        Kurve.TokenManager.reset();
         Kurve.Field.resize();
         this.checkForWinner();
     },
