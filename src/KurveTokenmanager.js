@@ -55,7 +55,8 @@ Kurve.TokenManager = {
     enabledTypes: [
         Kurve.Superpowerconfig.types.REVERSE_CONTROLS,
         Kurve.Superpowerconfig.types.PLAYER_WRAPAROUND,
-        Kurve.Superpowerconfig.types.GLOBAL_WRAPAROUND
+        Kurve.Superpowerconfig.types.GLOBAL_WRAPAROUND,
+        Kurve.Superpowerconfig.types.THICK_LINES
     ],
     
     init: function() {
@@ -73,12 +74,24 @@ Kurve.TokenManager = {
     getRandomSpawnTime: function() {
         var min = Kurve.Config.Token.spawnIntervalMin;
         var max = Kurve.Config.Token.spawnIntervalMax;
+        
+        if (Kurve.Config.Debug.DEBUG_FAST_TOKENS) {
+            min = 500;  // 0.5 seconds
+            max = 1000; // 1 second
+        }
+        
         return min + Math.random() * (max - min);
     },
     
     getRandomDuration: function() {
         var min = Kurve.Config.Token.effectDurationMin;
         var max = Kurve.Config.Token.effectDurationMax;
+        
+        if (Kurve.Config.Debug.DEBUG_FAST_TOKENS) {
+            min = 1000;  // 1 second
+            max = 3000;  // 3 seconds
+        }
+        
         return min + Math.random() * (max - min);
     },
     

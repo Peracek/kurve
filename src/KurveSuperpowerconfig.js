@@ -786,6 +786,8 @@ Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.THICK_LINES] = {
         }
     ],
 
+    color: '#FF6B35',
+
     helpers: {
         executionTime: 0,
         initialHoleInterval: null,

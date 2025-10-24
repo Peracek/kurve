@@ -30,6 +30,7 @@ Kurve.Config = {
         curvePosition: false,
         curveTrace: false,
         fieldDrawnPixels: false,
+        DEBUG_FAST_TOKENS: true,
     },
     
     Field: {
