@@ -387,7 +387,12 @@ Kurve.Curve.prototype.isCollided = function(positionX, positionY) {
 
     if ( !drawnPoint ) return false;  // No collision.
     if ( drawnPoint.curve && this.isImmuneTo(drawnPoint.curve) ) return false;
-    if ( drawnPoint.curve === this && this.isWithinSelfCollisionTimeout(drawnPoint.frameId) ) return false;
+    
+    // Check self-collision with extended timeout for thick lines
+    if ( drawnPoint.curve === this ) {
+        var timeoutFrames = this.isThickGapsActive() ? 10 : this.getOptions().selfCollisionTimeoutInFrames;
+        if ( Kurve.Game.CURRENT_FRAME_ID - drawnPoint.frameId < timeoutFrames ) return false;
+    }
 
     return true;
 };
