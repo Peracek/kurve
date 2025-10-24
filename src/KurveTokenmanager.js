@@ -87,11 +87,6 @@ Kurve.TokenManager = {
         var min = Kurve.Config.Token.effectDurationMin;
         var max = Kurve.Config.Token.effectDurationMax;
         
-        if (Kurve.Config.Debug.DEBUG_FAST_TOKENS) {
-            min = 1000;  // 1 second
-            max = 3000;  // 3 seconds
-        }
-        
         return min + Math.random() * (max - min);
     },
     
