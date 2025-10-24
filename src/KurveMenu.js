@@ -29,12 +29,14 @@ Kurve.Menu = {
     boundOnKeyDown: null,
     audioPlayer: null,
     scrollKeys: ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Spacebar', ' '],
+    qrCodeInstance: null,
     
     init: function() {
         this.initPlayerMenu();
         this.addWindowListeners();
         this.addMouseListeners();
         this.initMenuMusic();
+        this.initControllers();
     },
         
     initPlayerMenu: function() {
@@ -213,5 +215,102 @@ Kurve.Menu = {
 
     requestFullScreen: function() {
         document.body.webkitRequestFullScreen();
+    },
+
+    initControllers: function() {
+        if (!Kurve.ControllerManager) return;
+
+        Kurve.ControllerManager.init();
+
+        Kurve.ControllerManager.onPeerId(function(peerId) {
+            this.updateMobileUrl(peerId);
+        }.bind(this));
+
+        Kurve.ControllerManager.onConnect(function(controllerId) {
+            console.log('Controller connected:', controllerId);
+            if (Kurve.players[controllerId]) {
+                Kurve.players[controllerId].setControllerConnected(true);
+            }
+            this.updateConnectionStatus();
+        }.bind(this));
+
+        Kurve.ControllerManager.onDisconnect(function(controllerId) {
+            console.log('Controller disconnected:', controllerId);
+            if (Kurve.players[controllerId]) {
+                Kurve.players[controllerId].setControllerConnected(false);
+            }
+            this.updateConnectionStatus();
+        }.bind(this));
+
+        var controllerInputStates = {};
+
+        Kurve.ControllerManager.onInput(function(controllerId, data) {
+            if (Kurve.players[controllerId]) {
+                if (!controllerInputStates[controllerId]) {
+                    controllerInputStates[controllerId] = { left: false, right: false };
+                }
+
+                if (data.action === 'left') {
+                    controllerInputStates[controllerId].left = data.value;
+                } else if (data.action === 'right') {
+                    controllerInputStates[controllerId].right = data.value;
+                }
+
+                Kurve.players[controllerId].setControllerInput(
+                    controllerInputStates[controllerId].left,
+                    controllerInputStates[controllerId].right
+                );
+            }
+        });
+    },
+
+    updateMobileUrl: function(peerId) {
+        var pathname = window.location.pathname;
+        if (pathname.endsWith('index.html')) {
+            pathname = pathname.replace('index.html', '');
+        } else if (!pathname.endsWith('/')) {
+            pathname += '/';
+        }
+        var baseUrl = window.location.origin + pathname;
+        var mobileUrl = baseUrl + 'mobile-controller.html?peer=' + peerId;
+
+        var urlElement = document.getElementById('controller-url');
+        if (urlElement) {
+            urlElement.innerHTML = 
+                '<div style="background: #f0f0f0; padding: 8px; border-radius: 4px; margin-bottom: 5px;">' +
+                '<a href="' + mobileUrl + '" target="_blank" style="color: #0066cc; text-decoration: underline;">Open Mobile Controller</a>' +
+                '</div>' +
+                '<button onclick="navigator.clipboard.writeText(\'' + mobileUrl + '\'); this.textContent=\'Copied!\'; setTimeout(() => this.textContent=\'Copy URL\', 2000);" ' +
+                'style="padding: 5px 15px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 4px;">Copy URL</button>';
+        }
+
+        var qrCodeDiv = document.getElementById('qr-code');
+        if (qrCodeDiv) {
+            if (this.qrCodeInstance) {
+                qrCodeDiv.innerHTML = '';
+            }
+
+            if (typeof QRCode !== 'undefined') {
+                this.qrCodeInstance = new QRCode(qrCodeDiv, {
+                    text: mobileUrl,
+                    width: 150,
+                    height: 150,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff'
+                });
+            } else {
+                setTimeout(function() {
+                    this.updateMobileUrl(peerId);
+                }.bind(this), 100);
+            }
+        }
+    },
+
+    updateConnectionStatus: function() {
+        var statusElement = document.getElementById('controller-status');
+        if (!statusElement || !Kurve.ControllerManager) return;
+
+        var connectedCount = Kurve.ControllerManager.getConnectedCount();
+        statusElement.textContent = connectedCount + ' controller' + (connectedCount !== 1 ? 's' : '') + ' connected';
     },
 };

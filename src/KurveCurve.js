@@ -293,14 +293,24 @@ Kurve.Curve.prototype.die = function() {
 
 Kurve.Curve.prototype.computeNewAngle = function() {
     var turnDirection = this.isControlsReversed() ? -1 : 1;
+    var isRight = false;
+    var isLeft = false;
     
-    if ( this.getGame().isKeyDown(this.getPlayer().getKeyRight()) ) {
+    if ( this.getPlayer().hasControllerInput() ) {
+        isRight = this.getPlayer().isControllerRight();
+        isLeft = this.getPlayer().isControllerLeft();
+    } else {
+        isRight = this.getGame().isKeyDown(this.getPlayer().getKeyRight());
+        isLeft = this.getGame().isKeyDown(this.getPlayer().getKeyLeft());
+    }
+    
+    if ( isRight ) {
         if (turnDirection === 1) {
             this.incrementAngle();
         } else {
             this.decrementAngle();
         }
-    } else if ( this.getGame().isKeyDown(this.getPlayer().getKeyLeft()) ) {
+    } else if ( isLeft ) {
         if (turnDirection === 1) {
             this.decrementAngle();
         } else {
