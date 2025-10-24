@@ -539,9 +539,20 @@ Kurve.Curve.prototype.isThickLineCollidingWithToken = function(tokenX, tokenY, t
 Kurve.Curve.prototype.useSuperpower = function(hook) {
     if ( !this.getPlayer().getSuperpower().usesHook(hook) ) return false;
     if ( this.getPlayer().getSuperpower().isActive() ) return true;
-    if ( Kurve.Game.isKeyDown(this.getPlayer().getKeySuperpower()) && this.getPlayer().getSuperpower().getCount() > 0 ) return true;
-
-    return false;
+    
+    var superpowerTriggered = false;
+    
+    // Check keyboard input
+    if ( Kurve.Game.isKeyDown(this.getPlayer().getKeySuperpower()) && this.getPlayer().getSuperpower().getCount() > 0 ) {
+        superpowerTriggered = true;
+    }
+    
+    // Check mobile controller action button
+    if ( this.getPlayer().isControllerActionPressed() && this.getPlayer().getSuperpower().getCount() > 0 ) {
+        superpowerTriggered = true;
+    }
+    
+    return superpowerTriggered;
 };
 
 Kurve.Curve.prototype.resetHoleCountDown = function() {

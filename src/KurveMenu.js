@@ -247,18 +247,24 @@ Kurve.Menu = {
         Kurve.ControllerManager.onInput(function(controllerId, data) {
             if (Kurve.players[controllerId]) {
                 if (!controllerInputStates[controllerId]) {
-                    controllerInputStates[controllerId] = { left: false, right: false };
+                    controllerInputStates[controllerId] = { left: false, right: false, action: false };
                 }
 
                 if (data.action === 'left') {
                     controllerInputStates[controllerId].left = data.value;
                 } else if (data.action === 'right') {
                     controllerInputStates[controllerId].right = data.value;
+                } else if (data.action === 'action') {
+                    controllerInputStates[controllerId].action = data.value;
                 }
 
                 Kurve.players[controllerId].setControllerInput(
                     controllerInputStates[controllerId].left,
                     controllerInputStates[controllerId].right
+                );
+                
+                Kurve.players[controllerId].setControllerActionPressed(
+                    controllerInputStates[controllerId].action
                 );
             }
         });
