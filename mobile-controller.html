@@ -370,6 +370,26 @@
         rightButton.addEventListener('mouseup', () => handleRightTouch(false));
         rightButton.addEventListener('mouseleave', () => handleRightTouch(false));
         
+        // Color selection event listeners
+        const colorOptions = document.querySelectorAll('.color-option');
+        colorOptions.forEach(option => {
+            // Touch events
+            option.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const playerId = parseInt(option.getAttribute('data-player-id'));
+                const playerName = option.getAttribute('data-player-name');
+                handleColorSelection(playerId, playerName);
+            });
+            
+            // Click events for desktop testing
+            option.addEventListener('click', (e) => {
+                e.preventDefault();
+                const playerId = parseInt(option.getAttribute('data-player-id'));
+                const playerName = option.getAttribute('data-player-name');
+                handleColorSelection(playerId, playerName);
+            });
+        });
+        
         // Prevent scrolling and zooming
         document.addEventListener('touchmove', (e) => {
             e.preventDefault();
