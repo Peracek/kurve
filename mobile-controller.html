@@ -138,6 +138,10 @@
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
 
+        #action-button {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
         #instructions {
             position: absolute;
             bottom: 20px;
@@ -171,6 +175,10 @@
             <div>←</div>
             <div class="label">LEFT</div>
         </div>
+        <div id="action-button" class="control-button">
+            <div>⚡</div>
+            <div class="label">ACTION</div>
+        </div>
         <div id="right-button" class="control-button">
             <div>→</div>
             <div class="label">RIGHT</div>
@@ -196,6 +204,7 @@
         const controlsDiv = document.getElementById('controls');
         const leftButton = document.getElementById('left-button');
         const rightButton = document.getElementById('right-button');
+        const actionButton = document.getElementById('action-button');
         
         const playerNames = ['Red', 'Orange', 'Green', 'Blue', 'Purple', 'Pink'];
         const playerColors = ['#D4373E', '#FFA039', '#3BCB69', '#3B90C3', '#7D11CD', '#DC72FF'];
@@ -329,6 +338,16 @@
             sendInput('right', isPressed);
         }
         
+        function handleActionPress(isPressed) {
+            if (isPressed) {
+                actionButton.classList.add('active');
+                vibrate(30);
+            } else {
+                actionButton.classList.remove('active');
+            }
+            sendInput('action', isPressed);
+        }
+        
         // Touch events for left button
         leftButton.addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -361,6 +380,22 @@
             handleRightTouch(false);
         });
         
+        // Touch events for action button
+        actionButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleActionPress(true);
+        });
+        
+        actionButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleActionPress(false);
+        });
+        
+        actionButton.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            handleActionPress(false);
+        });
+        
         // Mouse events for desktop testing
         leftButton.addEventListener('mousedown', () => handleLeftTouch(true));
         leftButton.addEventListener('mouseup', () => handleLeftTouch(false));
@@ -369,6 +404,11 @@
         rightButton.addEventListener('mousedown', () => handleRightTouch(true));
         rightButton.addEventListener('mouseup', () => handleRightTouch(false));
         rightButton.addEventListener('mouseleave', () => handleRightTouch(false));
+        
+        // Mouse events for action button
+        actionButton.addEventListener('mousedown', () => handleActionPress(true));
+        actionButton.addEventListener('mouseup', () => handleActionPress(false));
+        actionButton.addEventListener('mouseleave', () => handleActionPress(false));
         
         // Color selection event listeners
         const colorOptions = document.querySelectorAll('.color-option');
