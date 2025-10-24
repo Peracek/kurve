@@ -44,6 +44,7 @@ Kurve.Superpowerconfig.types = {
     REVERSE_CONTROLS: 'REVERSE_CONTROLS',
     PLAYER_WRAPAROUND: 'PLAYER_WRAPAROUND',
     GLOBAL_WRAPAROUND: 'GLOBAL_WRAPAROUND',
+    THICK_GAPS: 'THICK_GAPS',
 };
 
 Kurve.Superpowerconfig.hooks = {
@@ -771,4 +772,73 @@ Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.GLOBAL_WRAPAROUND] = {
     init: function(curve) {},
     act: function(hook, curve) {},
     close: function(curve) {}
+};
+
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.THICK_GAPS] = {
+    label: 'thick gaps',
+
+    hooks: [Kurve.Superpowerconfig.hooks.DRAW_NEXT_FRAME],
+
+    audios: [
+        {
+            key: 'superpower-thick-gaps',
+            source: 'superpower/run-faster.mp3'
+        }
+    ],
+
+    helpers: {
+        executionTime: 0,
+        initialHoleInterval: null,
+        initialHoleIntervalRandomness: null,
+        gapMultiplier: 2.5,
+        initAct: function(curve) {
+            this.getAudioPlayer().play('superpower-thick-gaps', {fade: 500, loop: true, reset: true});
+            this.decrementCount();
+            this.setIsActive(true);
+            curve.setThickGapsActive(true);
+            
+            // Random duration between 5 and 10 seconds
+            var randomDuration = 5 + Math.random() * 5;
+            this.helpers.executionTime = randomDuration * Kurve.Game.fps;
+            
+            // Store original values
+            this.helpers.initialHoleInterval = curve.getOptions().holeInterval;
+            this.helpers.initialHoleIntervalRandomness = curve.getOptions().holeIntervalRandomness;
+            
+            // Apply bigger gaps
+            curve.getOptions().holeInterval = Math.round(this.helpers.initialHoleInterval * this.helpers.gapMultiplier);
+            curve.getOptions().holeIntervalRandomness = Math.round(this.helpers.initialHoleIntervalRandomness * this.helpers.gapMultiplier);
+        },
+        closeAct: function(curve) {
+            this.getAudioPlayer().pause('superpower-thick-gaps', {fade: 500});
+            this.setIsActive(false);
+            curve.setThickGapsActive(false);
+            
+            // Restore original values
+            if (this.helpers.initialHoleInterval !== null) {
+                curve.getOptions().holeInterval = this.helpers.initialHoleInterval;
+                curve.getOptions().holeIntervalRandomness = this.helpers.initialHoleIntervalRandomness;
+            }
+        }
+    },
+
+    init: function(curve) {
+
+    },
+
+    act: function(hook, curve) {
+        if ( !this.isActive() ) this.helpers.initAct.call(this, curve);
+        if ( this.helpers.executionTime < 1 ) this.helpers.closeAct.call(this, curve);
+
+        this.helpers.executionTime--;
+    },
+
+    close: function(curve) {
+        this.setIsActive(false);
+        curve.setThickGapsActive(false);
+        if ( this.helpers.initialHoleInterval !== null ) {
+            curve.getOptions().holeInterval = this.helpers.initialHoleInterval;
+            curve.getOptions().holeIntervalRandomness = this.helpers.initialHoleIntervalRandomness;
+        }
+    }
 };
