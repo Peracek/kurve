@@ -31,6 +31,9 @@ Kurve.Player = function(id, keyLeft, keyRight, keySuperpower) {
     var superPowerElement = null;
     var isActive = false;
     var color = null;
+    var controllerConnected = false;
+    var controllerLeftPressed = false;
+    var controllerRightPressed = false;
     
     this.incrementPoints = function() {
         points++;
@@ -48,6 +51,11 @@ Kurve.Player = function(id, keyLeft, keyRight, keySuperpower) {
 
     this.setColor = function(newColor) { color = newColor; };
     this.setIsActive = function(newIsActive) { isActive = newIsActive; };
+    this.setControllerConnected = function(connected) { controllerConnected = connected; };
+    this.setControllerInput = function(left, right) { 
+        controllerLeftPressed = left;
+        controllerRightPressed = right;
+    };
     
     this.getPoints = function() { return points; };
     this.getId = function() { return id; };
@@ -57,6 +65,9 @@ Kurve.Player = function(id, keyLeft, keyRight, keySuperpower) {
     this.getKeyRight = function() { return keyRight; };
     this.getKeySuperpower = function() { return keySuperpower; };
     this.isActive = function() { return isActive; };
+    this.hasControllerInput = function() { return controllerConnected; };
+    this.isControllerLeft = function() { return controllerLeftPressed; };
+    this.isControllerRight = function() { return controllerRightPressed; };
 
 };
 
