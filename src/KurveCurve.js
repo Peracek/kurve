@@ -40,6 +40,7 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
     var wraparoundTimeout = null;
     var justWrapped = false;
     var thickLinesMultiplier = 0;
+    var thickLinesTimeout = null;
 
     var options = {
         stepLength: config.stepLength,
@@ -112,6 +113,21 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
         wraparoundTimeout = setTimeout(function() {
             wraparoundEnabled = false;
             wraparoundTimeout = null;
+        }, duration);
+    };
+
+    this.applyThickLines = function(duration) {
+        if (thickLinesTimeout) {
+            clearTimeout(thickLinesTimeout);
+        }
+        
+        // Stack the effect: add 4 to the current multiplier
+        thickLinesMultiplier += 4;
+        
+        // Set up timeout to reset
+        thickLinesTimeout = setTimeout(function() {
+            thickLinesMultiplier = 0;
+            thickLinesTimeout = null;
         }, duration);
     };
 

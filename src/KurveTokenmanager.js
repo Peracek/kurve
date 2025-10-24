@@ -148,6 +148,8 @@ Kurve.TokenManager = {
             curve.applyWraparound(duration);
         } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.GLOBAL_WRAPAROUND]) {
             this.applyGlobalWraparound(duration);
+        } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.THICK_LINES]) {
+            this.applyThickLines(curve, duration);
         }
     },
     
@@ -161,6 +163,10 @@ Kurve.TokenManager = {
             this.globalWraparoundActive = false;
             this.globalWraparoundTimeout = null;
         }.bind(this), duration);
+    },
+    
+    applyThickLines: function(curve, duration) {
+        curve.applyThickLines(duration);
     },
     
     draw: function(pixiTokens) {
