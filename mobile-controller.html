@@ -45,10 +45,64 @@
             font-size: 16px;
         }
 
-        #controls {
+        #color-selection {
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             height: 100vh;
             width: 100vw;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        #color-selection.hidden {
+            display: none;
+        }
+
+        #color-selection h2 {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .color-option {
+            padding: 25px;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .color-option:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        #controls {
+            display: none;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        #controls.active {
+            display: flex;
         }
 
         .control-button {
@@ -100,6 +154,18 @@
 <body>
     <div id="status">Connecting...</div>
     
+    <div id="color-selection">
+        <h2>Choose Your Player</h2>
+        <div class="color-grid">
+            <div class="color-option" data-player-id="0" data-player-name="red" style="background-color: #D4373E;">Red</div>
+            <div class="color-option" data-player-id="1" data-player-name="orange" style="background-color: #FFA039;">Orange</div>
+            <div class="color-option" data-player-id="2" data-player-name="green" style="background-color: #3BCB69;">Green</div>
+            <div class="color-option" data-player-id="3" data-player-name="blue" style="background-color: #3B90C3;">Blue</div>
+            <div class="color-option" data-player-id="4" data-player-name="purple" style="background-color: #7D11CD;">Purple</div>
+            <div class="color-option" data-player-id="5" data-player-name="pink" style="background-color: #DC72FF;">Pink</div>
+        </div>
+    </div>
+    
     <div id="controls">
         <div id="left-button" class="control-button">
             <div>←</div>
@@ -123,8 +189,11 @@
         let peer = null;
         let hostConnection = null;
         let myControllerId = null;
+        let selectedPlayerId = null;
         
         const statusDiv = document.getElementById('status');
+        const colorSelection = document.getElementById('color-selection');
+        const controlsDiv = document.getElementById('controls');
         const leftButton = document.getElementById('left-button');
         const rightButton = document.getElementById('right-button');
         
@@ -168,6 +237,35 @@
                     data: { action, value }
                 });
             }
+        }
+        
+        function sendPlayerSelection(playerId) {
+            if (hostConnection && hostConnection.open) {
+                hostConnection.send({
+                    type: 'select-player',
+                    playerId: playerId
+                });
+            }
+        }
+        
+        function showControls() {
+            colorSelection.classList.add('hidden');
+            controlsDiv.classList.add('active');
+            
+            if (selectedPlayerId !== null) {
+                leftButton.style.background = playerColors[selectedPlayerId];
+                rightButton.style.background = playerColors[selectedPlayerId];
+            }
+        }
+        
+        function handleColorSelection(playerId, playerName) {
+            selectedPlayerId = playerId;
+            vibrate(20);
+            
+            updateStatus('Playing as ' + playerNames[playerId], 'connected');
+            
+            sendPlayerSelection(playerId);
+            showControls();
         }
         
         function initController() {
