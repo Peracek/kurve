@@ -44,7 +44,7 @@ Kurve.Superpowerconfig.types = {
     REVERSE_CONTROLS: 'REVERSE_CONTROLS',
     PLAYER_WRAPAROUND: 'PLAYER_WRAPAROUND',
     GLOBAL_WRAPAROUND: 'GLOBAL_WRAPAROUND',
-    THICK_GAPS: 'THICK_GAPS',
+    THICK_LINES: 'THICK_LINES',
 };
 
 Kurve.Superpowerconfig.hooks = {
@@ -774,14 +774,14 @@ Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.GLOBAL_WRAPAROUND] = {
     close: function(curve) {}
 };
 
-Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.THICK_GAPS] = {
-    label: 'thick gaps',
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.THICK_LINES] = {
+    label: 'thick lines',
 
     hooks: [Kurve.Superpowerconfig.hooks.DRAW_NEXT_FRAME],
 
     audios: [
         {
-            key: 'superpower-thick-gaps',
+            key: 'superpower-thick-lines',
             source: 'superpower/run-faster.mp3'
         }
     ],
@@ -791,28 +791,36 @@ Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.THICK_GAPS] = {
         initialHoleInterval: null,
         initialHoleIntervalRandomness: null,
         gapMultiplier: 2.5,
+        thicknessIncrement: 4,
         initAct: function(curve) {
-            this.getAudioPlayer().play('superpower-thick-gaps', {fade: 500, loop: true, reset: true});
+            var wasAlreadyActive = this.isActive();
+            
+            this.getAudioPlayer().play('superpower-thick-lines', {fade: 500, loop: true, reset: true});
             this.decrementCount();
             this.setIsActive(true);
-            curve.setThickGapsActive(true);
             
-            // Random duration between 5 and 10 seconds
+            // Stack the effect: add 4x to the current multiplier
+            var currentMultiplier = curve.getThickLinesMultiplier();
+            curve.setThickLinesMultiplier(currentMultiplier + this.helpers.thicknessIncrement);
+            
+            if (!wasAlreadyActive) {
+                // First activation: store original gap settings
+                this.helpers.initialHoleInterval = curve.getOptions().holeInterval;
+                this.helpers.initialHoleIntervalRandomness = curve.getOptions().holeIntervalRandomness;
+                
+                // Apply bigger gaps
+                curve.getOptions().holeInterval = Math.round(this.helpers.initialHoleInterval * this.helpers.gapMultiplier);
+                curve.getOptions().holeIntervalRandomness = Math.round(this.helpers.initialHoleIntervalRandomness * this.helpers.gapMultiplier);
+            }
+            
+            // Random duration between 5 and 10 seconds (reset timer each trigger)
             var randomDuration = 5 + Math.random() * 5;
             this.helpers.executionTime = randomDuration * Kurve.Game.fps;
-            
-            // Store original values
-            this.helpers.initialHoleInterval = curve.getOptions().holeInterval;
-            this.helpers.initialHoleIntervalRandomness = curve.getOptions().holeIntervalRandomness;
-            
-            // Apply bigger gaps
-            curve.getOptions().holeInterval = Math.round(this.helpers.initialHoleInterval * this.helpers.gapMultiplier);
-            curve.getOptions().holeIntervalRandomness = Math.round(this.helpers.initialHoleIntervalRandomness * this.helpers.gapMultiplier);
         },
         closeAct: function(curve) {
-            this.getAudioPlayer().pause('superpower-thick-gaps', {fade: 500});
+            this.getAudioPlayer().pause('superpower-thick-lines', {fade: 500});
             this.setIsActive(false);
-            curve.setThickGapsActive(false);
+            curve.setThickLinesMultiplier(0);
             
             // Restore original values
             if (this.helpers.initialHoleInterval !== null) {
@@ -835,7 +843,7 @@ Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.THICK_GAPS] = {
 
     close: function(curve) {
         this.setIsActive(false);
-        curve.setThickGapsActive(false);
+        curve.setThickLinesMultiplier(0);
         if ( this.helpers.initialHoleInterval !== null ) {
             curve.getOptions().holeInterval = this.helpers.initialHoleInterval;
             curve.getOptions().holeIntervalRandomness = this.helpers.initialHoleIntervalRandomness;

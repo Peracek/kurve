@@ -39,7 +39,7 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
     var wraparoundEnabled = false;
     var wraparoundTimeout = null;
     var justWrapped = false;
-    var thickGapsActive = false;
+    var thickLinesMultiplier = 0;
 
     var options = {
         stepLength: config.stepLength,
@@ -71,11 +71,11 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
     this.decrementImmunity = function() { if ( immunityFor > 0 ) immunityFor -= 1; };
     this.decrementPowerUpTimeOut = function() { if ( powerUpTimeOutFor > 0 ) powerUpTimeOutFor -= 1; };
     this.setIsInvisible = function(newIsInvisible) { isInvisible = newIsInvisible; };
-    this.setThickGapsActive = function(active) { thickGapsActive = active; };
+    this.setThickGapsActive = function(active) { thickLinesMultiplier = active ? 4 : 1; };
 
     this.isImmuneTo = function(curve) { return immunityFor > 0 && (immunityTo === 'all' || immunityTo.includes(curve)); };
     this.isPowerUpTimeOut = function() { return powerUpTimeOutFor > 0; };
-    this.isThickGapsActive = function() { return thickGapsActive; };
+    this.isThickGapsActive = function() { return thickLinesMultiplier > 1; };
     this.getAudioPlayer = function() { return audioPlayer; };
     this.getPlayer = function() { return player; };
     this.getGame = function() { return game; };
@@ -90,6 +90,8 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
     this.isWraparoundEnabled = function() { return wraparoundEnabled; };
     this.isJustWrapped = function() { return justWrapped; };
     this.setJustWrapped = function(value) { justWrapped = value; };
+    this.getThickLinesMultiplier = function() { return thickLinesMultiplier; };
+    this.setThickLinesMultiplier = function(multiplier) { thickLinesMultiplier = multiplier; };
 
     this.applyReverseControls = function(duration) {
         if (controlsReversedTimeout) {
@@ -155,8 +157,8 @@ Kurve.Curve.prototype.drawLine = function(field) {
 
         if ( this.getOptions().holeCountDown < -7 ) this.resetHoleCountDown();
     } else if ( this.isThickGapsActive() ) {
-        // Draw thick line for THICK_GAPS superpower (4x thicker)
-        var thickLineWidth = 16; // 4x the default line width of 4
+        // Draw thick line for thick lines superpower (4x thicker per stack)
+        var thickLineWidth = 4 * this.getThickLinesMultiplier(); // 4px base * multiplier
         field.pixiCurves.lineStyle(thickLineWidth, u.stringToHex(this.getPlayer().getColor()));
         field.pixiCurves.moveTo(this.getPositionX(), this.getPositionY());
         field.pixiCurves.lineTo(this.getNextPositionX(), this.getNextPositionY());
