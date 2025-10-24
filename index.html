@@ -59,6 +59,13 @@
                                     <div class='toggle-sound button' onclick='Kurve.Sound.toggleSound()'></div>
                                     <div class='clear'></div>
                                 </div>
+
+                                <div id='mobile-controls' class='light' style='margin-top: 20px; padding: 15px; text-align: center; border-top: 1px solid #999;'>
+                                    <h3 style='margin-bottom: 10px;'>📱 Mobile Control</h3>
+                                    <p style='margin-bottom: 10px; font-size: 14px;'>Scan to play from your phone</p>
+                                    <div id='qr-code' style='display: inline-block; padding: 10px; background: white;'></div>
+                                    <p id='controller-status' style='margin-top: 10px; font-weight: bold;'>0 controllers connected</p>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -168,6 +175,8 @@
             </div>
         </div>
 
+        <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
         <script type="module" src="/src/main.js"></script>
     </body>
 </html>
