@@ -48,6 +48,9 @@ Kurve.Superpowerconfig.types = {
     JUMP_WEAPON: 'JUMP_WEAPON',
     VERTICAL_BAR_WEAPON: 'VERTICAL_BAR_WEAPON',
     HYDRA_WEAPON: 'HYDRA_WEAPON',
+    RUN_FASTER_TOKEN: 'RUN_FASTER_TOKEN',
+    RUN_SLOWER_TOKEN: 'RUN_SLOWER_TOKEN',
+    SQUARE_HEAD_TOKEN: 'SQUARE_HEAD_TOKEN',
 };
 
 Kurve.Superpowerconfig.hooks = {
@@ -890,4 +893,40 @@ Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA_WEAPON] = {
     init: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA].init,
     act: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA].act,
     close: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA].close
+};
+
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.RUN_FASTER_TOKEN] = {
+    label: 'run faster token',
+    color: '#FFD700',
+    isToken: true,
+    hooks: [],
+    audios: [],
+    helpers: {},
+    init: function(curve) {},
+    act: function(hook, curve) {},
+    close: function(curve) {}
+};
+
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.RUN_SLOWER_TOKEN] = {
+    label: 'run slower token',
+    color: '#FFD700',
+    isToken: true,
+    hooks: [],
+    audios: [],
+    helpers: {},
+    init: function(curve) {},
+    act: function(hook, curve) {},
+    close: function(curve) {}
+};
+
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.SQUARE_HEAD_TOKEN] = {
+    label: 'square head token',
+    color: '#FFD700',
+    isToken: true,
+    hooks: [],
+    audios: [],
+    helpers: {},
+    init: function(curve) {},
+    act: function(hook, curve) {},
+    close: function(curve) {}
 };

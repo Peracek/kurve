@@ -131,6 +131,34 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
         }, duration);
     };
 
+    this.applyRunFaster = function(duration) {
+        var self = this;
+        var originalStepLength = this.getOptions().stepLength;
+        this.getOptions().stepLength = originalStepLength * 2;
+        setTimeout(function() {
+            self.getOptions().stepLength = originalStepLength;
+        }, duration);
+    };
+
+    this.applyRunSlower = function(duration) {
+        var self = this;
+        var originalStepLength = this.getOptions().stepLength;
+        this.getOptions().stepLength = originalStepLength / 2;
+        setTimeout(function() {
+            self.getOptions().stepLength = originalStepLength;
+        }, duration);
+    };
+
+    this.applySquareHead = function(duration) {
+        var self = this;
+        var originalDAngle = this.getOptions().dAngle;
+        this.getOptions().angle = (Math.PI / 2) * Math.round(this.getOptions().angle / (Math.PI / 2));
+        this.getOptions().dAngle = 0;
+        setTimeout(function() {
+            self.getOptions().dAngle = originalDAngle;
+        }, duration);
+    };
+
     this.resetHoleCountDown(); //Randomize initial hole interval
 };
 

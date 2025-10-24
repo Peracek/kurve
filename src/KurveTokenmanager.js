@@ -59,7 +59,10 @@ Kurve.TokenManager = {
         Kurve.Superpowerconfig.types.THICK_LINES,
         Kurve.Superpowerconfig.types.JUMP_WEAPON,
         Kurve.Superpowerconfig.types.VERTICAL_BAR_WEAPON,
-        Kurve.Superpowerconfig.types.HYDRA_WEAPON
+        Kurve.Superpowerconfig.types.HYDRA_WEAPON,
+        Kurve.Superpowerconfig.types.RUN_FASTER_TOKEN,
+        Kurve.Superpowerconfig.types.RUN_SLOWER_TOKEN,
+        Kurve.Superpowerconfig.types.SQUARE_HEAD_TOKEN
     ],
     
     init: function() {
@@ -141,13 +144,24 @@ Kurve.TokenManager = {
         var duration = this.getRandomDuration();
         
         if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.REVERSE_CONTROLS]) {
-            curve.applyReverseControls(duration);
+            // Apply to OTHER players only
+            this.applyEffectToOthers(curve, 'applyReverseControls', duration);
         } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.PLAYER_WRAPAROUND]) {
             curve.applyWraparound(duration);
         } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.GLOBAL_WRAPAROUND]) {
             this.applyGlobalWraparound(duration);
         } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.THICK_LINES]) {
-            this.applyThickLines(curve, duration);
+            // Apply to OTHER players only
+            this.applyEffectToOthers(curve, 'applyThickLines', duration);
+        } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.RUN_FASTER_TOKEN]) {
+            // Apply to collector only
+            curve.applyRunFaster(duration);
+        } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.RUN_SLOWER_TOKEN]) {
+            // Apply to OTHER players only
+            this.applyEffectToOthers(curve, 'applyRunSlower', duration);
+        } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.SQUARE_HEAD_TOKEN]) {
+            // Apply to collector only
+            curve.applySquareHead(duration);
         } else if (token.type.isWeapon) {
             // Handle weapon tokens
             this.applyWeapon(token, curve);
@@ -166,8 +180,20 @@ Kurve.TokenManager = {
         }.bind(this), duration);
     },
     
-    applyThickLines: function(curve, duration) {
-        curve.applyThickLines(duration);
+    applyEffectToOthers: function(collectorCurve, methodName, duration) {
+        // Apply effect to all curves EXCEPT the collector
+        var collectorPlayerId = collectorCurve.getPlayer().getId();
+        
+        for (var playerId in Kurve.Game.runningCurves) {
+            if (playerId === collectorPlayerId) continue; // Skip the collector
+            
+            var curves = Kurve.Game.runningCurves[playerId];
+            for (var i = 0; i < curves.length; i++) {
+                if (typeof curves[i][methodName] === 'function') {
+                    curves[i][methodName](duration);
+                }
+            }
+        }
     },
     
     applyWeapon: function(token, curve) {
