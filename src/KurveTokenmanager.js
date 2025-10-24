@@ -131,7 +131,17 @@ Kurve.TokenManager = {
                 for (var j = 0; j < this.tokens.length; j++) {
                     var token = this.tokens[j];
                     
-                    if (token.checkCollision(curve)) {
+                    var hasCollision = false;
+                    
+                    // Check for thick line collision first
+                    if (curve.isThickGapsActive()) {
+                        hasCollision = curve.isThickLineCollidingWithToken(token.x, token.y, token.radius);
+                    } else {
+                        // Standard collision check
+                        hasCollision = token.checkCollision(curve);
+                    }
+                    
+                    if (hasCollision) {
                         this.applyTokenEffect(token, curve);
                         token.active = false;
                     }

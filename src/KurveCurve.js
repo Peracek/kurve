@@ -207,8 +207,30 @@ Kurve.Curve.prototype.drawLine = function(field) {
         field.pixiCurves.moveTo(this.getPositionX(), this.getPositionY());
         field.pixiCurves.lineTo(this.getNextPositionX(), this.getNextPositionY());
         
-        // Add to drawn pixels for collision detection
+        // Add thick collision boundaries by adding offset lines to collision map
+        var thickness = thickLineWidth / 2;
+        var angle = this.getOptions().angle;
+        var perpendicular = angle + Math.PI / 2;
+        
+        // Add the center line
         field.addLineToDrawnPixel('curve', this.getPositionX(), this.getPositionY(), this.getNextPositionX(), this.getNextPositionY(), this.getPlayer().getColor(), this);
+        
+        // Add offset lines perpendicular to the direction of movement to create thickness in collision detection
+        for (var offset = 2; offset < thickness; offset += 2) {
+            var offsetX1 = this.getPositionX() + Math.cos(perpendicular) * offset;
+            var offsetY1 = this.getPositionY() + Math.sin(perpendicular) * offset;
+            var offsetX2 = this.getNextPositionX() + Math.cos(perpendicular) * offset;
+            var offsetY2 = this.getNextPositionY() + Math.sin(perpendicular) * offset;
+            
+            field.addLineToDrawnPixel('curve', offsetX1, offsetY1, offsetX2, offsetY2, this.getPlayer().getColor(), this);
+            
+            var offsetX3 = this.getPositionX() - Math.cos(perpendicular) * offset;
+            var offsetY3 = this.getPositionY() - Math.sin(perpendicular) * offset;
+            var offsetX4 = this.getNextPositionX() - Math.cos(perpendicular) * offset;
+            var offsetY4 = this.getNextPositionY() - Math.sin(perpendicular) * offset;
+            
+            field.addLineToDrawnPixel('curve', offsetX3, offsetY3, offsetX4, offsetY4, this.getPlayer().getColor(), this);
+        }
     } else {
         field.drawLine('curve', this.getPositionX(), this.getPositionY(), this.getNextPositionX(), this.getNextPositionY(), this.getPlayer().getColor(), this);
     }
@@ -244,6 +266,45 @@ Kurve.Curve.prototype.checkForCollision = function() {
     }
 
     var trace = u.interpolateTwoPoints(this.getPositionX(), this.getPositionY(), this.getNextPositionX(), this.getNextPositionY());
+    
+    // If thick lines are active, expand trace to include perpendicular offset points
+    if (this.isThickGapsActive()) {
+        var thickLineWidth = 4 * this.getThickLinesMultiplier();
+        var thickness = thickLineWidth / 2;
+        var angle = this.getOptions().angle;
+        var perpendicular = angle + Math.PI / 2;
+        
+        // Add offset traces perpendicular to movement direction
+        for (var offset = 2; offset < thickness; offset += 2) {
+            var offsetTracePos = u.interpolateTwoPoints(
+                this.getPositionX() + Math.cos(perpendicular) * offset,
+                this.getPositionY() + Math.sin(perpendicular) * offset,
+                this.getNextPositionX() + Math.cos(perpendicular) * offset,
+                this.getNextPositionY() + Math.sin(perpendicular) * offset
+            );
+            var offsetTraceNeg = u.interpolateTwoPoints(
+                this.getPositionX() - Math.cos(perpendicular) * offset,
+                this.getPositionY() - Math.sin(perpendicular) * offset,
+                this.getNextPositionX() - Math.cos(perpendicular) * offset,
+                this.getNextPositionY() - Math.sin(perpendicular) * offset
+            );
+            
+            // Merge offset traces into main trace
+            for (var px in offsetTracePos) {
+                if (!trace[px]) trace[px] = {};
+                for (var py in offsetTracePos[px]) {
+                    trace[px][py] = true;
+                }
+            }
+            for (var px in offsetTraceNeg) {
+                if (!trace[px]) trace[px] = {};
+                for (var py in offsetTraceNeg[px]) {
+                    trace[px][py] = true;
+                }
+            }
+        }
+    }
+    
     var isCollided = false;
 
     outerLoop:
@@ -379,6 +440,42 @@ Kurve.Curve.prototype.computeNewAngle = function() {
     
 Kurve.Curve.prototype.setRandomAngle = function() {
     this.setAngle(2 * Math.PI * Math.random());
+};
+
+Kurve.Curve.prototype.isThickLineCollidingWithToken = function(tokenX, tokenY, tokenRadius) {
+    // Check if thick line head collides with token
+    var headDistance = Math.sqrt(Math.pow(this.getNextPositionX() - tokenX, 2) + Math.pow(this.getNextPositionY() - tokenY, 2));
+    if (headDistance < tokenRadius + 3) {
+        return true;
+    }
+    
+    // If thick lines active, also check offset points
+    if (this.isThickGapsActive()) {
+        var thickLineWidth = 4 * this.getThickLinesMultiplier();
+        var thickness = thickLineWidth / 2;
+        var angle = this.getOptions().angle;
+        var perpendicular = angle + Math.PI / 2;
+        
+        for (var offset = 2; offset < thickness; offset += 2) {
+            // Check positive offset
+            var offsetX1 = this.getNextPositionX() + Math.cos(perpendicular) * offset;
+            var offsetY1 = this.getNextPositionY() + Math.sin(perpendicular) * offset;
+            var dist1 = Math.sqrt(Math.pow(offsetX1 - tokenX, 2) + Math.pow(offsetY1 - tokenY, 2));
+            if (dist1 < tokenRadius + 3) {
+                return true;
+            }
+            
+            // Check negative offset
+            var offsetX2 = this.getNextPositionX() - Math.cos(perpendicular) * offset;
+            var offsetY2 = this.getNextPositionY() - Math.sin(perpendicular) * offset;
+            var dist2 = Math.sqrt(Math.pow(offsetX2 - tokenX, 2) + Math.pow(offsetY2 - tokenY, 2));
+            if (dist2 < tokenRadius + 3) {
+                return true;
+            }
+        }
+    }
+    
+    return false;
 };
 
 Kurve.Curve.prototype.useSuperpower = function(hook) {
