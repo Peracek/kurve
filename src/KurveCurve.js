@@ -390,7 +390,7 @@ Kurve.Curve.prototype.isCollided = function(positionX, positionY) {
     
     // Check self-collision with extended timeout for thick lines
     if ( drawnPoint.curve === this ) {
-        var timeoutFrames = this.isThickGapsActive() ? 10 : this.getOptions().selfCollisionTimeoutInFrames;
+        var timeoutFrames = this.isThickGapsActive() ? 20 : this.getOptions().selfCollisionTimeoutInFrames;
         if ( Kurve.Game.CURRENT_FRAME_ID - drawnPoint.frameId < timeoutFrames ) return false;
     }
 
