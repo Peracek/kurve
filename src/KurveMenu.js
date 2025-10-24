@@ -29,12 +29,14 @@ Kurve.Menu = {
     boundOnKeyDown: null,
     audioPlayer: null,
     scrollKeys: ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Spacebar', ' '],
+    qrCodeInstance: null,
     
     init: function() {
         this.initPlayerMenu();
         this.addWindowListeners();
         this.addMouseListeners();
         this.initMenuMusic();
+        this.initControllers();
     },
         
     initPlayerMenu: function() {
@@ -213,5 +215,118 @@ Kurve.Menu = {
 
     requestFullScreen: function() {
         document.body.webkitRequestFullScreen();
+    },
+
+    initControllers: function() {
+        if (!Kurve.ControllerManager) return;
+
+        Kurve.ControllerManager.init();
+
+        Kurve.ControllerManager.onPeerId(function(peerId) {
+            this.updateMobileUrl(peerId);
+        }.bind(this));
+
+        Kurve.ControllerManager.onConnect(function(controllerId) {
+            console.log('Controller connected:', controllerId);
+            // Controller will select a player via color picker, so don't assign yet
+            this.updateConnectionStatus();
+        }.bind(this));
+
+        Kurve.ControllerManager.onDisconnect(function(controllerId) {
+            console.log('Controller disconnected:', controllerId);
+            const playerIndex = Kurve.ControllerManager.getPlayerIndexForController(controllerId);
+            if (Kurve.players[playerIndex]) {
+                Kurve.players[playerIndex].setControllerConnected(false);
+                const playerId = Kurve.players[playerIndex].getId();
+                if (playerId) {
+                    Kurve.Menu.deactivatePlayer(playerId);
+                }
+            }
+            // Clean up the mapping
+            Kurve.ControllerManager.controllerToPlayerMap.delete(controllerId);
+            this.updateConnectionStatus();
+        }.bind(this));
+
+        Kurve.ControllerManager.onColorSelect(function(controllerId, colorIndex) {
+            console.log('Color selected:', controllerId, colorIndex);
+            // Map the controller to the selected player
+            if (colorIndex < Kurve.players.length) {
+                Kurve.ControllerManager.mapControllerToPlayer(controllerId, colorIndex);
+                Kurve.Menu.audioPlayer.play('menu-navigate');
+                Kurve.Menu.activatePlayer(Kurve.players[colorIndex].getId());
+                Kurve.players[colorIndex].setControllerConnected(true);
+                
+                // Send confirmation back to controller to show game controls
+                const conn = Kurve.ControllerManager.connections.get(controllerId);
+                if (conn && conn.open) {
+                    conn.send({
+                        type: 'assign-id',
+                        controllerId: controllerId
+                    });
+                }
+            }
+        }.bind(this));
+
+        var controllerInputStates = {};
+
+        Kurve.ControllerManager.onInput(function(controllerId, data) {
+            const playerIndex = Kurve.ControllerManager.getPlayerIndexForController(controllerId);
+            if (Kurve.players[playerIndex]) {
+                if (!controllerInputStates[controllerId]) {
+                    controllerInputStates[controllerId] = { left: false, right: false };
+                }
+
+                if (data.action === 'left') {
+                    controllerInputStates[controllerId].left = data.value;
+                } else if (data.action === 'right') {
+                    controllerInputStates[controllerId].right = data.value;
+                }
+
+                Kurve.players[playerIndex].setControllerInput(
+                    controllerInputStates[controllerId].left,
+                    controllerInputStates[controllerId].right
+                );
+            }
+        });
+    },
+
+    updateMobileUrl: function(peerId) {
+        var pathname = window.location.pathname;
+        if (pathname.endsWith('index.html')) {
+            pathname = pathname.replace('index.html', '');
+        } else if (!pathname.endsWith('/')) {
+            pathname += '/';
+        }
+        var baseUrl = window.location.origin + pathname;
+        var mobileUrl = baseUrl + 'mobile-controller.html?peer=' + peerId;
+
+        var qrCodeDiv = document.getElementById('qr-code');
+        if (qrCodeDiv) {
+            if (this.qrCodeInstance) {
+                qrCodeDiv.innerHTML = '';
+            }
+
+            if (typeof QRCode !== 'undefined') {
+                this.qrCodeInstance = new QRCode(qrCodeDiv, {
+                    text: mobileUrl,
+                    width: 150,
+                    height: 150,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff'
+                });
+            } else {
+                setTimeout(function() {
+                    this.updateMobileUrl(peerId);
+                }.bind(this), 100);
+            }
+        }
+    },
+
+    updateConnectionStatus: function() {
+        var statusElement = document.getElementById('controller-status');
+        if (!statusElement || !Kurve.ControllerManager) return;
+
+        var connectedCount = Kurve.ControllerManager.getConnectedCount();
+        statusElement.textContent = connectedCount + ' controller' + (connectedCount !== 1 ? 's' : '') + ' connected';
     },
 };

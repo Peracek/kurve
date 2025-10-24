@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig({
   server: {
@@ -8,6 +9,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        mobileController: resolve(__dirname, 'mobile-controller.html'),
+      },
       output: {
         entryFileNames: 'js/[name].js',
         chunkFileNames: 'js/[name].js',

@@ -20,6 +20,7 @@ import './KurveStorage.js';
 import './KurveSound.js';
 import './KurveTheming.js';
 import './KurveFactory.js';
+import './KurveControllermanager.js';
 import './KurveMenu.js';
 import './KurveGame.js';
 import './KurveField.js';

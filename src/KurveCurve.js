@@ -218,9 +218,20 @@ Kurve.Curve.prototype.die = function() {
 };
 
 Kurve.Curve.prototype.computeNewAngle = function() {
-    if ( this.getGame().isKeyDown(this.getPlayer().getKeyRight()) ) {
+    var isRight = false;
+    var isLeft = false;
+    
+    if ( this.getPlayer().hasControllerInput() ) {
+        isRight = this.getPlayer().isControllerRight();
+        isLeft = this.getPlayer().isControllerLeft();
+    } else {
+        isRight = this.getGame().isKeyDown(this.getPlayer().getKeyRight());
+        isLeft = this.getGame().isKeyDown(this.getPlayer().getKeyLeft());
+    }
+    
+    if ( isRight ) {
         this.incrementAngle();
-    } else if ( this.getGame().isKeyDown(this.getPlayer().getKeyLeft()) ) {
+    } else if ( isLeft ) {
         this.decrementAngle();
     }
 };
