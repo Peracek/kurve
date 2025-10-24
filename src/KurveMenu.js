@@ -256,6 +256,9 @@ Kurve.Menu = {
                     controllerInputStates[controllerId].right = data.value;
                 } else if (data.action === 'action') {
                     controllerInputStates[controllerId].action = data.value;
+                } else if (data.action === 'start') {
+                    // Start button pressed on mobile controller
+                    Kurve.Menu.onSpaceDown();
                 }
 
                 Kurve.players[controllerId].setControllerInput(

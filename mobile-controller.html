@@ -171,6 +171,10 @@
     </div>
     
     <div id="controls">
+        <div id="start-button" class="control-button" style="position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 150px; height: auto; padding: 15px; background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); z-index: 10; border-radius: 8px; font-size: 24px;">
+            <div>▶</div>
+            <div class="label">START</div>
+        </div>
         <div id="left-button" class="control-button">
             <div>←</div>
             <div class="label">LEFT</div>
@@ -205,6 +209,7 @@
         const leftButton = document.getElementById('left-button');
         const rightButton = document.getElementById('right-button');
         const actionButton = document.getElementById('action-button');
+        const startButton = document.getElementById('start-button');
         
         const playerNames = ['Red', 'Orange', 'Green', 'Blue', 'Purple', 'Pink'];
         const playerColors = ['#D4373E', '#FFA039', '#3BCB69', '#3B90C3', '#7D11CD', '#DC72FF'];
@@ -348,6 +353,16 @@
             sendInput('action', isPressed);
         }
         
+        function handleStartPress() {
+            vibrate(50);
+            if (hostConnection && hostConnection.open) {
+                hostConnection.send({
+                    type: 'input',
+                    data: { action: 'start', value: true }
+                });
+            }
+        }
+        
         // Touch events for left button
         leftButton.addEventListener('touchstart', (e) => {
             e.preventDefault();
@@ -394,6 +409,18 @@
         actionButton.addEventListener('touchcancel', (e) => {
             e.preventDefault();
             handleActionPress(false);
+        });
+        
+        // Touch events for start button
+        startButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleStartPress();
+        });
+        
+        // Mouse events for start button (desktop testing)
+        startButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            handleStartPress();
         });
         
         // Mouse events for desktop testing
