@@ -226,7 +226,12 @@ Kurve.Game = {
             
             curve.setPosition(Kurve.Field.getRandomPosition().getPosX(), Kurve.Field.getRandomPosition().getPosY());
             curve.setRandomAngle();
-            curve.getPlayer().getSuperpower().init(curve);
+            
+            // Set all players to NO_SUPERPOWER at start, weapons will be collected during game
+            var noSuperpowerAbility = Kurve.Factory.getSuperpower(Kurve.Superpowerconfig.types.NO_SUPERPOWER);
+            curve.getPlayer().setSuperpower(noSuperpowerAbility);
+            noSuperpowerAbility.init(curve);
+            
             curve.drawCurrentPosition(Kurve.Field);
         });
     },

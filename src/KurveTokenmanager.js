@@ -56,7 +56,10 @@ Kurve.TokenManager = {
         Kurve.Superpowerconfig.types.REVERSE_CONTROLS,
         Kurve.Superpowerconfig.types.PLAYER_WRAPAROUND,
         Kurve.Superpowerconfig.types.GLOBAL_WRAPAROUND,
-        Kurve.Superpowerconfig.types.THICK_LINES
+        Kurve.Superpowerconfig.types.THICK_LINES,
+        Kurve.Superpowerconfig.types.JUMP_WEAPON,
+        Kurve.Superpowerconfig.types.VERTICAL_BAR_WEAPON,
+        Kurve.Superpowerconfig.types.HYDRA_WEAPON
     ],
     
     init: function() {
@@ -145,6 +148,9 @@ Kurve.TokenManager = {
             this.applyGlobalWraparound(duration);
         } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.THICK_LINES]) {
             this.applyThickLines(curve, duration);
+        } else if (token.type.isWeapon) {
+            // Handle weapon tokens
+            this.applyWeapon(token, curve);
         }
     },
     
@@ -164,6 +170,34 @@ Kurve.TokenManager = {
         curve.applyThickLines(duration);
     },
     
+    applyWeapon: function(token, curve) {
+        // Get the base superpower type (e.g., JUMP from JUMP_WEAPON)
+        var baseSuperpowerType = null;
+        
+        // Map weapon types to base types
+        if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.JUMP_WEAPON]) {
+            baseSuperpowerType = Kurve.Superpowerconfig.types.JUMP;
+        } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.VERTICAL_BAR_WEAPON]) {
+            baseSuperpowerType = Kurve.Superpowerconfig.types.VERTICAL_BAR;
+        } else if (token.type === Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA_WEAPON]) {
+            baseSuperpowerType = Kurve.Superpowerconfig.types.HYDRA;
+        }
+        
+        if (baseSuperpowerType) {
+            // Create the weapon superpower
+            var weaponSuperpower = Kurve.Factory.getSuperpower(baseSuperpowerType);
+            
+            // Set the player's current superpower to the weapon
+            curve.getPlayer().setSuperpower(weaponSuperpower);
+            
+            // Initialize the superpower for the curve
+            weaponSuperpower.init(curve);
+            
+            // Add one ammo use
+            weaponSuperpower.incrementCount();
+        }
+    },
+    
     draw: function(pixiTokens) {
         if (!pixiTokens) return;
         
@@ -176,8 +210,15 @@ Kurve.TokenManager = {
             
             var colorHex = u.stringToHex(token.type.color);
             
-            pixiTokens.lineStyle(3, colorHex);
-            pixiTokens.drawCircle(token.x, token.y, token.radius);
+            if (token.type.isWeapon) {
+                // Draw as rectangle for weapons
+                pixiTokens.lineStyle(3, colorHex);
+                pixiTokens.drawRect(token.x - 8, token.y - 8, 16, 16);
+            } else {
+                // Draw as circle for other tokens
+                pixiTokens.lineStyle(3, colorHex);
+                pixiTokens.drawCircle(token.x, token.y, token.radius);
+            }
         }
     },
     

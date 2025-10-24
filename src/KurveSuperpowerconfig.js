@@ -45,6 +45,9 @@ Kurve.Superpowerconfig.types = {
     PLAYER_WRAPAROUND: 'PLAYER_WRAPAROUND',
     GLOBAL_WRAPAROUND: 'GLOBAL_WRAPAROUND',
     THICK_LINES: 'THICK_LINES',
+    JUMP_WEAPON: 'JUMP_WEAPON',
+    VERTICAL_BAR_WEAPON: 'VERTICAL_BAR_WEAPON',
+    HYDRA_WEAPON: 'HYDRA_WEAPON',
 };
 
 Kurve.Superpowerconfig.hooks = {
@@ -851,4 +854,40 @@ Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.THICK_LINES] = {
             curve.getOptions().holeIntervalRandomness = this.helpers.initialHoleIntervalRandomness;
         }
     }
+};
+
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.JUMP_WEAPON] = {
+    label: 'jump',
+    color: '#4A90E2',
+    isWeapon: true,
+    hooks: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.JUMP].hooks,
+    audios: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.JUMP].audios,
+    helpers: JSON.parse(JSON.stringify(Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.JUMP].helpers)),
+    init: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.JUMP].init,
+    act: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.JUMP].act,
+    close: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.JUMP].close
+};
+
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.VERTICAL_BAR_WEAPON] = {
+    label: 'vertical bar',
+    color: '#7ED321',
+    isWeapon: true,
+    hooks: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.VERTICAL_BAR].hooks,
+    audios: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.VERTICAL_BAR].audios,
+    helpers: JSON.parse(JSON.stringify(Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.VERTICAL_BAR].helpers)),
+    init: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.VERTICAL_BAR].init,
+    act: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.VERTICAL_BAR].act,
+    close: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.VERTICAL_BAR].close
+};
+
+Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA_WEAPON] = {
+    label: 'hydra',
+    color: '#F5A623',
+    isWeapon: true,
+    hooks: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA].hooks,
+    audios: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA].audios,
+    helpers: JSON.parse(JSON.stringify(Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA].helpers)),
+    init: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA].init,
+    act: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA].act,
+    close: Kurve.Superpowerconfig[Kurve.Superpowerconfig.types.HYDRA].close
 };

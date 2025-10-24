@@ -79,12 +79,10 @@ Kurve.Player.prototype.renderMenuItem = function() {
                 '<div class="superpower">' +
                     '<div class="key light">' + this.getKeySuperpowerChar() + '</div>' +
                     '<div class="superpowerType light">' +
-                        '<div class="left" onclick="Kurve.Menu.onPreviousSuperPowerClicked(event, \'' + this.getId() + '\')"><i class="arrow arrow-left"></i></div>' +
                         '<div class="superpowers">' +
-                            '<div id="' + this.getId() + '-superpower">' + this.getSuperpower().getLabel() + '</div>' +
-                        '</div> ' +
-                        '<div class="right" onclick="Kurve.Menu.onNextSuperPowerClicked(event, \'' + this.getId() + '\')"><i class="arrow arrow-right"></i></div>' +
-                    '</div> ' +
+                            '<div id="' + this.getId() + '-superpower">Collect weapons</div>' +
+                        '</div>' +
+                    '</div>' +
                 '</div>' +
                 '<div class="clear"></div>' +
             '</div>';
