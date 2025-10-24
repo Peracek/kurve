@@ -265,8 +265,24 @@ Kurve.Menu = {
     },
 
     updateMobileUrl: function(peerId) {
-        var baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+        var pathname = window.location.pathname;
+        if (pathname.endsWith('index.html')) {
+            pathname = pathname.replace('index.html', '');
+        } else if (!pathname.endsWith('/')) {
+            pathname += '/';
+        }
+        var baseUrl = window.location.origin + pathname;
         var mobileUrl = baseUrl + 'mobile-controller.html?peer=' + peerId;
+
+        var urlElement = document.getElementById('controller-url');
+        if (urlElement) {
+            urlElement.innerHTML = 
+                '<div style="background: #f0f0f0; padding: 8px; border-radius: 4px; margin-bottom: 5px;">' +
+                '<a href="' + mobileUrl + '" target="_blank" style="color: #0066cc; text-decoration: underline;">Open Mobile Controller</a>' +
+                '</div>' +
+                '<button onclick="navigator.clipboard.writeText(\'' + mobileUrl + '\'); this.textContent=\'Copied!\'; setTimeout(() => this.textContent=\'Copy URL\', 2000);" ' +
+                'style="padding: 5px 15px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 4px;">Copy URL</button>';
+        }
 
         var qrCodeDiv = document.getElementById('qr-code');
         if (qrCodeDiv) {
