@@ -41,6 +41,9 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
     var justWrapped = false;
     var thickLinesMultiplier = 0;
     var thickLinesTimeout = null;
+    var squareHeadActive = false;
+    var squareHeadPreviousKey = null;
+    var squareHeadTimeout = null;
 
     var options = {
         stepLength: config.stepLength,
@@ -93,6 +96,11 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
     this.setJustWrapped = function(value) { justWrapped = value; };
     this.getThickLinesMultiplier = function() { return thickLinesMultiplier; };
     this.setThickLinesMultiplier = function(multiplier) { thickLinesMultiplier = multiplier; };
+
+    this.isSquareHeadActive = function() { return squareHeadActive; };
+    this.setSquareHeadActive = function(active) { squareHeadActive = active; };
+    this.getSquareHeadPreviousKey = function() { return squareHeadPreviousKey; };
+    this.setSquareHeadPreviousKey = function(key) { squareHeadPreviousKey = key; };
 
     this.applyReverseControls = function(duration) {
         if (controlsReversedTimeout) {
@@ -152,10 +160,23 @@ Kurve.Curve = function(player, game, field, config, audioPlayer) {
     this.applySquareHead = function(duration) {
         var self = this;
         var originalDAngle = this.getOptions().dAngle;
+        
+        // Snap to 90-degree angle
         this.getOptions().angle = (Math.PI / 2) * Math.round(this.getOptions().angle / (Math.PI / 2));
         this.getOptions().dAngle = 0;
-        setTimeout(function() {
+        
+        this.setSquareHeadActive(true);
+        this.setSquareHeadPreviousKey(null);
+        
+        if (squareHeadTimeout) {
+            clearTimeout(squareHeadTimeout);
+        }
+        
+        squareHeadTimeout = setTimeout(function() {
             self.getOptions().dAngle = originalDAngle;
+            self.setSquareHeadActive(false);
+            self.setSquareHeadPreviousKey(null);
+            squareHeadTimeout = null;
         }, duration);
     };
 
@@ -423,6 +444,38 @@ Kurve.Curve.prototype.computeNewAngle = function() {
         isLeft = this.getGame().isKeyDown(this.getPlayer().getKeyLeft());
     }
     
+    // Handle square head mode
+    if (this.isSquareHeadActive()) {
+        var keyPressed = null;
+        
+        if (isRight) {
+            keyPressed = 'right';
+        } else if (isLeft) {
+            keyPressed = 'left';
+        }
+        
+        // Only rotate if a DIFFERENT key is pressed (key must be released and re-pressed or switched)
+        if (keyPressed !== null && this.getSquareHeadPreviousKey() !== keyPressed) {
+            if (keyPressed === 'right') {
+                if (turnDirection === 1) {
+                    this.getOptions().angle += Math.PI / 2;
+                } else {
+                    this.getOptions().angle -= Math.PI / 2;
+                }
+            } else if (keyPressed === 'left') {
+                if (turnDirection === 1) {
+                    this.getOptions().angle -= Math.PI / 2;
+                } else {
+                    this.getOptions().angle += Math.PI / 2;
+                }
+            }
+        }
+        
+        this.setSquareHeadPreviousKey(keyPressed);
+        return;
+    }
+    
+    // Normal mode
     if ( isRight ) {
         if (turnDirection === 1) {
             this.incrementAngle();

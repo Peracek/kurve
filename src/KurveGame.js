@@ -249,11 +249,27 @@ Kurve.Game = {
         this.isRoundStarted = false;
         this.stopRun();
         this.runningCurves  = {};
+        this.resetAllSuperpowers();
         this.incrementSuperpowers();
         this.Audio.terminateRound();
         Kurve.TokenManager.reset();
         Kurve.Field.resize();
         this.checkForWinner();
+    },
+
+    resetAllSuperpowers: function() {
+        // Reset all superpower and superaction effects on all players
+        this.players.forEach(function(player) {
+            var weapons = ['JUMP', 'VERTICAL_BAR', 'HYDRA', 'RUN_FASTER', 'RUN_SLOWER', 'SQUARE_HEAD'];
+            
+            for (var i = 0; i < weapons.length; i++) {
+                player.setWeapon(Kurve.Superpowerconfig.types[weapons[i]], null);
+            }
+            
+            // Reset to NO_SUPERPOWER
+            var noSuperpowerAbility = Kurve.Factory.getSuperpower(Kurve.Superpowerconfig.types.NO_SUPERPOWER);
+            player.setSuperpower(noSuperpowerAbility);
+        });
     },
 
     incrementSuperpowers: function() {
