@@ -34,6 +34,7 @@ Kurve.Player = function(id, keyLeft, keyRight, keySuperpower) {
     var controllerConnected = false;
     var controllerLeftPressed = false;
     var controllerRightPressed = false;
+    var weapons = {}; // Store weapon instances by type
     
     this.incrementPoints = function() {
         points++;
@@ -68,6 +69,8 @@ Kurve.Player = function(id, keyLeft, keyRight, keySuperpower) {
     this.hasControllerInput = function() { return controllerConnected; };
     this.isControllerLeft = function() { return controllerLeftPressed; };
     this.isControllerRight = function() { return controllerRightPressed; };
+    this.getWeapon = function(weaponType) { return weapons[weaponType]; };
+    this.setWeapon = function(weaponType, weapon) { weapons[weaponType] = weapon; };
 
 };
 

@@ -184,17 +184,25 @@ Kurve.TokenManager = {
         }
         
         if (baseSuperpowerType) {
-            // Create the weapon superpower
-            var weaponSuperpower = Kurve.Factory.getSuperpower(baseSuperpowerType);
+            var player = curve.getPlayer();
+            var currentWeapon = player.getSuperpower();
+            var currentAmmo = currentWeapon.getCount();
             
-            // Set the player's current superpower to the weapon
-            curve.getPlayer().setSuperpower(weaponSuperpower);
+            // Always create a fresh weapon instance to avoid residual state from previous uses
+            var newWeapon = Kurve.Factory.getSuperpower(baseSuperpowerType);
+            newWeapon.init(curve);
             
-            // Initialize the superpower for the curve
-            weaponSuperpower.init(curve);
+            // Set as the current active superpower
+            player.setSuperpower(newWeapon);
             
-            // Add one ammo use
-            weaponSuperpower.incrementCount();
+            // Set ammo count to current + 1 using a simple loop
+            var targetAmmo = currentAmmo + 1;
+            for (var i = 0; i < targetAmmo; i++) {
+                newWeapon.incrementCount();
+            }
+            
+            // Store the weapon instance for future reference
+            player.setWeapon(baseSuperpowerType, newWeapon);
         }
     },
     
