@@ -24,6 +24,8 @@
 
 'use strict';
 
+import * as PIXI from 'pixi.js';
+
 Kurve.Field = {
     
     canvas: null,

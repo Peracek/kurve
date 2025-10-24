@@ -24,6 +24,9 @@
 
 'use strict';
 
+const Kurve = window.Kurve || {};
+window.Kurve = Kurve;
+
 Kurve.Utility = function(element) {
     if ( element instanceof String ) {}
 
@@ -131,3 +134,4 @@ Kurve.Utility.debounce = function(debouncedFunction, timeout) {
 };
 
 var u = Kurve.Utility;
+window.u = u;

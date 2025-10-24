@@ -11,20 +11,28 @@ No problem! Just download the [sources](https://achtungkurve.com/download/kurve-
 ## Development
 
 ### Requirements for development
-- node.js
+- node.js (v14+)
 - npm
- 
+
 ### Installing dependencies
 ```sh
 npm install
 ```
 
-### Building sources during development
+### Running the development server
 ```sh
-gulp watch
+npm run dev
 ```
+This starts a local dev server with hot module replacement (HMR) at `http://localhost:5173`. The app will automatically reload when you make changes.
 
-### Building sources for production
+### Building for production
 ```sh
-gulp build
+npm run build
 ```
+This creates an optimized production build in the `dist/` folder.
+
+### Preview production build locally
+```sh
+npm run preview
+```
+This runs the production build locally for testing before deployment.

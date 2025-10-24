@@ -67,4 +67,6 @@ var Kurve = {
 
 };
 
-document.addEventListener('DOMContentLoaded', Kurve.init.bind(Kurve));
+window.Kurve = Kurve;
+
+// DOMContentLoaded listener moved to main.js to ensure all modules are loaded first
