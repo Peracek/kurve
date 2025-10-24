@@ -265,7 +265,13 @@ Kurve.Menu = {
     },
 
     updateMobileUrl: function(peerId) {
-        var baseUrl = window.location.origin + window.location.pathname.replace('index.html', '');
+        var pathname = window.location.pathname;
+        if (pathname.endsWith('index.html')) {
+            pathname = pathname.replace('index.html', '');
+        } else if (!pathname.endsWith('/')) {
+            pathname += '/';
+        }
+        var baseUrl = window.location.origin + pathname;
         var mobileUrl = baseUrl + 'mobile-controller.html?peer=' + peerId;
 
         var qrCodeDiv = document.getElementById('qr-code');
