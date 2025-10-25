@@ -303,11 +303,12 @@
                 
                 hostConnection.on('open', () => {
                     updateStatus('Connected to game!', 'connected');
-                    showColorPicker();
                 });
                 
                 hostConnection.on('data', (data) => {
-                    if (data.type === 'assign-id') {
+                    if (data.type === 'connection-ready') {
+                        showColorPicker();
+                    } else if (data.type === 'assign-id') {
                         myControllerId = data.controllerId;
                         updateStatus('Connected!', 'connected');
                         updatePlayerInfo();

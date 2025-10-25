@@ -60,7 +60,7 @@ Kurve.ControllerManager = {
             
             conn.on('open', function() {
                 conn.send({
-                    type: 'assign-id',
+                    type: 'connection-ready',
                     controllerId: controllerId
                 });
                 
