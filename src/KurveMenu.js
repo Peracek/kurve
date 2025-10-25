@@ -228,24 +228,50 @@ Kurve.Menu = {
 
         Kurve.ControllerManager.onConnect(function(controllerId) {
             console.log('Controller connected:', controllerId);
-            if (Kurve.players[controllerId]) {
-                Kurve.players[controllerId].setControllerConnected(true);
-            }
+            // Controller will select a player via color picker, so don't assign yet
             this.updateConnectionStatus();
         }.bind(this));
 
         Kurve.ControllerManager.onDisconnect(function(controllerId) {
             console.log('Controller disconnected:', controllerId);
-            if (Kurve.players[controllerId]) {
-                Kurve.players[controllerId].setControllerConnected(false);
+            const playerIndex = Kurve.ControllerManager.getPlayerIndexForController(controllerId);
+            if (Kurve.players[playerIndex]) {
+                Kurve.players[playerIndex].setControllerConnected(false);
+                const playerId = Kurve.players[playerIndex].getId();
+                if (playerId) {
+                    Kurve.Menu.deactivatePlayer(playerId);
+                }
             }
+            // Clean up the mapping
+            Kurve.ControllerManager.controllerToPlayerMap.delete(controllerId);
             this.updateConnectionStatus();
+        }.bind(this));
+
+        Kurve.ControllerManager.onColorSelect(function(controllerId, colorIndex) {
+            console.log('Color selected:', controllerId, colorIndex);
+            // Map the controller to the selected player
+            if (colorIndex < Kurve.players.length) {
+                Kurve.ControllerManager.mapControllerToPlayer(controllerId, colorIndex);
+                Kurve.Menu.audioPlayer.play('menu-navigate');
+                Kurve.Menu.activatePlayer(Kurve.players[colorIndex].getId());
+                Kurve.players[colorIndex].setControllerConnected(true);
+                
+                // Send confirmation back to controller to show game controls
+                const conn = Kurve.ControllerManager.connections.get(controllerId);
+                if (conn && conn.open) {
+                    conn.send({
+                        type: 'assign-id',
+                        controllerId: controllerId
+                    });
+                }
+            }
         }.bind(this));
 
         var controllerInputStates = {};
 
         Kurve.ControllerManager.onInput(function(controllerId, data) {
-            if (Kurve.players[controllerId]) {
+            const playerIndex = Kurve.ControllerManager.getPlayerIndexForController(controllerId);
+            if (Kurve.players[playerIndex]) {
                 if (!controllerInputStates[controllerId]) {
                     controllerInputStates[controllerId] = { left: false, right: false };
                 }
@@ -256,7 +282,7 @@ Kurve.Menu = {
                     controllerInputStates[controllerId].right = data.value;
                 }
 
-                Kurve.players[controllerId].setControllerInput(
+                Kurve.players[playerIndex].setControllerInput(
                     controllerInputStates[controllerId].left,
                     controllerInputStates[controllerId].right
                 );

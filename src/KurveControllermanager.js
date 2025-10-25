@@ -27,10 +27,12 @@
 Kurve.ControllerManager = {
     peer: null,
     connections: new Map(),
+    controllerToPlayerMap: new Map(),
     onInputCallback: null,
     onConnectCallback: null,
     onDisconnectCallback: null,
     onPeerIdCallback: null,
+    onColorSelectCallback: null,
     nextControllerId: 0,
     peerId: null,
     
@@ -70,6 +72,8 @@ Kurve.ControllerManager = {
             conn.on('data', function(data) {
                 if (data.type === 'input' && this.onInputCallback) {
                     this.onInputCallback(controllerId, data.data);
+                } else if (data.type === 'select-color' && this.onColorSelectCallback) {
+                    this.onColorSelectCallback(controllerId, data.colorIndex);
                 }
             }.bind(this));
             
@@ -105,6 +109,20 @@ Kurve.ControllerManager = {
     
     onPeerId: function(callback) {
         this.onPeerIdCallback = callback;
+    },
+    
+    onColorSelect: function(callback) {
+        this.onColorSelectCallback = callback;
+    },
+    
+    mapControllerToPlayer: function(controllerId, playerIndex) {
+        this.controllerToPlayerMap.set(controllerId, playerIndex);
+    },
+    
+    getPlayerIndexForController: function(controllerId) {
+        return this.controllerToPlayerMap.get(controllerId) !== undefined 
+            ? this.controllerToPlayerMap.get(controllerId) 
+            : controllerId;
     },
     
     getConnectedCount: function() {
