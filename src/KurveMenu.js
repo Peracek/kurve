@@ -287,18 +287,21 @@ Kurve.Menu = {
             const playerIndex = Kurve.ControllerManager.getPlayerIndexForController(controllerId);
             if (Kurve.players[playerIndex]) {
                 if (!controllerInputStates[controllerId]) {
-                    controllerInputStates[controllerId] = { left: false, right: false };
+                    controllerInputStates[controllerId] = { left: false, right: false, superpower: false };
                 }
 
                 if (data.action === 'left') {
                     controllerInputStates[controllerId].left = data.value;
                 } else if (data.action === 'right') {
                     controllerInputStates[controllerId].right = data.value;
+                } else if (data.action === 'superpower') {
+                    controllerInputStates[controllerId].superpower = data.value;
                 }
 
                 Kurve.players[playerIndex].setControllerInput(
                     controllerInputStates[controllerId].left,
-                    controllerInputStates[controllerId].right
+                    controllerInputStates[controllerId].right,
+                    controllerInputStates[controllerId].superpower
                 );
             }
         });

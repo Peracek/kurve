@@ -84,6 +84,10 @@
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
 
+        #superpower-button {
+            background: linear-gradient(135deg, #f5af19 0%, #f12711 100%);
+        }
+
         #instructions {
             position: absolute;
             bottom: 20px;
@@ -280,6 +284,10 @@
             <div>→</div>
             <div class="label">RIGHT</div>
         </div>
+        <div id="superpower-button" class="control-button">
+            <div>⚡</div>
+            <div class="label">SUPERPOWER</div>
+        </div>
     </div>
 
     <div id="next-round-screen" style="display: none;">
@@ -313,6 +321,7 @@
         const statusDiv = document.getElementById('status');
         const leftButton = document.getElementById('left-button');
         const rightButton = document.getElementById('right-button');
+        const superpowerButton = document.getElementById('superpower-button');
         
         const playerNames = ['Red', 'Orange', 'Green', 'Blue', 'Purple', 'Pink'];
         const playerColors = ['#D4373E', '#FFA039', '#3BCB69', '#3B90C3', '#7D11CD', '#DC72FF'];
@@ -338,6 +347,7 @@
                 
                 leftButton.style.background = playerColors[selectedColorIndex];
                 rightButton.style.background = playerColors[selectedColorIndex];
+                superpowerButton.style.background = playerColors[selectedColorIndex];
             }
         }
         
@@ -529,6 +539,16 @@
             }
             sendInput('right', isPressed);
         }
+
+        function handleSuperpowerTouch(isPressed) {
+            if (isPressed) {
+                superpowerButton.classList.add('active');
+                vibrate();
+            } else {
+                superpowerButton.classList.remove('active');
+            }
+            sendInput('superpower', isPressed);
+        }
         
         // Touch events for left button
         leftButton.addEventListener('touchstart', (e) => {
@@ -561,6 +581,21 @@
             e.preventDefault();
             handleRightTouch(false);
         });
+
+        superpowerButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleSuperpowerTouch(true);
+        });
+
+        superpowerButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            handleSuperpowerTouch(false);
+        });
+
+        superpowerButton.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            handleSuperpowerTouch(false);
+        });
         
         // Mouse events for desktop testing
         leftButton.addEventListener('mousedown', () => handleLeftTouch(true));
@@ -570,6 +605,10 @@
         rightButton.addEventListener('mousedown', () => handleRightTouch(true));
         rightButton.addEventListener('mouseup', () => handleRightTouch(false));
         rightButton.addEventListener('mouseleave', () => handleRightTouch(false));
+
+        superpowerButton.addEventListener('mousedown', () => handleSuperpowerTouch(true));
+        superpowerButton.addEventListener('mouseup', () => handleSuperpowerTouch(false));
+        superpowerButton.addEventListener('mouseleave', () => handleSuperpowerTouch(false));
         
         // Next round button events
         const nextRoundButton = document.getElementById('next-round-button');
