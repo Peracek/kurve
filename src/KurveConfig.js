@@ -24,7 +24,7 @@
 
 'use strict';
 
-Kurve.Config = {
+export const Config = {
 
     Debug: {
         curvePosition: false,
@@ -59,7 +59,7 @@ Kurve.Config = {
     },
 
     Sound: {
-        soundPath: 'dist/sound/',
+        soundPath: 'sound/',
         fadeTimeOut: 60
     },
     

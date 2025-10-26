@@ -24,46 +24,60 @@
 
 'use strict';
 
-Kurve.Superpower = function(hooks, act, helpers, type, init, close, audioPlayer) {
+import { Superpowerconfig } from './KurveSuperpowerconfig.js';
+import { Config } from './KurveConfig.js';
 
-    var count = 0;
-    var isActive = false;
+// Game import will be lazy loaded to avoid circular dependencies
+let Game = null;
 
-    this.act = act;
-    this.helpers = helpers;
-    this.init = init;
-    this.close = close;
-    
-    this.incrementCount = function() {
-        if (type === Kurve.Superpowerconfig.types.CHUCK_NORRIS || type === Kurve.Superpowerconfig.types.NO_SUPERPOWER) {
-            return;
-        }
+async function getGame() {
+    if (!Game) {
+        const mod = await import('./KurveGame.js');
+        Game = mod.Game;
+    }
+    return Game;
+}
 
-        count = Math.min(count + 1, Kurve.Config.Superpower.maxSuperpowers);
+export class Superpower {
+    constructor(hooks, act, helpers, type, init, close, audioPlayer) {
+        let count = 0;
+        let isActive = false;
 
-        Kurve.Game.renderPlayerScores();
-    };
-    
-    this.decrementCount = function() {
-        count = Math.max(count - 1, 0);
+        this.act = act;
+        this.helpers = helpers;
+        this.init = init;
+        this.close = close;
+        
+        this.incrementCount = function() {
+            if (type === Superpowerconfig.types.CHUCK_NORRIS || type === Superpowerconfig.types.NO_SUPERPOWER) {
+                return;
+            }
 
-        Kurve.Game.renderPlayerScores();
-    };
+            count = Math.min(count + 1, Config.Superpower.maxSuperpowers);
 
-    this.getAudioPlayer = function() { return audioPlayer; };
-    this.getHooks = function() { return hooks; };
-    this.getType = function() { return type; };
-    this.getCount = function() { return count; };
-    this.isActive = function() { return isActive; };
+            getGame().then(GameModule => GameModule.renderPlayerScores());
+        };
+        
+        this.decrementCount = function() {
+            count = Math.max(count - 1, 0);
 
-    this.setIsActive = function(newIsActive) { isActive = newIsActive; };
+            getGame().then(GameModule => GameModule.renderPlayerScores());
+        };
 
-};
+        this.getAudioPlayer = function() { return audioPlayer; };
+        this.getHooks = function() { return hooks; };
+        this.getType = function() { return type; };
+        this.getCount = function() { return count; };
+        this.isActive = function() { return isActive; };
 
-Kurve.Superpower.prototype.getLabel = function() {
-    return Kurve.Superpowerconfig[this.getType()].label;
-};
+        this.setIsActive = function(newIsActive) { isActive = newIsActive; };
+    }
 
-Kurve.Superpower.prototype.usesHook = function(hook) {
-    return this.getHooks().indexOf(hook) > -1;
-};
+    getLabel() {
+        return Superpowerconfig[this.getType()].label;
+    }
+
+    usesHook(hook) {
+        return this.getHooks().indexOf(hook) > -1;
+    }
+}

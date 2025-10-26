@@ -24,24 +24,29 @@
 
 'use strict';
 
-Kurve.Point = function(posX, posY) {
+import { Utility } from './KurveUtility.js';
 
-    this.getPosX = function(precision) {
-        if ( precision === undefined ) return posX;
-        return u.round(posX, precision); 
-    };
+export class Point {
+    constructor(posX, posY) {
+        this.posX = posX;
+        this.posY = posY;
+    }
+
+    getPosX(precision) {
+        if ( precision === undefined ) return this.posX;
+        return Utility.round(this.posX, precision); 
+    }
     
-    this.getPosY = function(precision) {
-        if ( precision === undefined ) return posY;
-        return u.round(posY, precision); 
-    };
+    getPosY(precision) {
+        if ( precision === undefined ) return this.posY;
+        return Utility.round(this.posY, precision); 
+    }
 
-};
+    equals(point) {
+        return point.getPosX(0) === this.getPosX(0) && point.getPosY(0) === this.getPosY(0);
+    }
 
-Kurve.Point.prototype.equals = function(point) {
-    return point.getPosX(0) === this.getPosX(0) && point.getPosY(0) === this.getPosY(0);
-};
-
-Kurve.Point.prototype.clone = function() {
-    return new Kurve.Point(this.getPosX(), this.getPosY());
-};
+    clone() {
+        return new Point(this.getPosX(), this.getPosY());
+    }
+}

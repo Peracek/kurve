@@ -24,25 +24,29 @@
 
 'use strict';
 
-Kurve.Factory = {
+import { Superpowerconfig } from './KurveSuperpowerconfig.js';
+import { Sound } from './KurveSound.js';
+import { Superpower } from './KurveSuperpower.js';
+
+export const Factory = {
 
     getSuperpower: function(type) {
-        if ( !Kurve.Superpowerconfig.hasOwnProperty(type) ) throw 'Superpower type ' + type + ' is not yet registered.';
+        if ( !Superpowerconfig.hasOwnProperty(type) ) throw 'Superpower type ' + type + ' is not yet registered.';
         
-        var hooks = Kurve.Superpowerconfig[type].hooks;
-        var act = Kurve.Superpowerconfig[type].act;
-        var init = Kurve.Superpowerconfig[type].init;
-        var close = Kurve.Superpowerconfig[type].close;
+        var hooks = Superpowerconfig[type].hooks;
+        var act = Superpowerconfig[type].act;
+        var init = Superpowerconfig[type].init;
+        var close = Superpowerconfig[type].close;
         var helpers = {};
-        var audioPlayer = Kurve.Sound.getAudioPlayer();
+        var audioPlayer = Sound.getAudioPlayer();
 
-        for (var attribute in Kurve.Superpowerconfig[type].helpers) {
-            if (Kurve.Superpowerconfig[type].helpers.hasOwnProperty(attribute)) {
-                helpers[attribute] = Kurve.Superpowerconfig[type].helpers[attribute];
+        for (var attribute in Superpowerconfig[type].helpers) {
+            if (Superpowerconfig[type].helpers.hasOwnProperty(attribute)) {
+                helpers[attribute] = Superpowerconfig[type].helpers[attribute];
             }
         }
 
-        return new Kurve.Superpower(hooks, act, helpers, type, init, close, audioPlayer);
+        return new Superpower(hooks, act, helpers, type, init, close, audioPlayer);
     }
 
 };

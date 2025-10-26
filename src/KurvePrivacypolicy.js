@@ -24,9 +24,12 @@
 
 'use strict';
 
-Kurve.Privacypolicy = {
+import { Storage } from './KurveStorage.js';
+import { Lightbox } from './KurveLightbox.js';
+
+export const Privacypolicy = {
     init: function() {
-        if (Kurve.Storage.get('kurve.privacy-policy-accepted') === 'yes') {
+        if (Storage.get('kurve.privacy-policy-accepted') === 'yes') {
             this.enableTracking();
             return;
         }
@@ -35,14 +38,14 @@ Kurve.Privacypolicy = {
     },
 
     showAcceptPrivacyPolicy: function() {
-        Kurve.Lightbox.show(document.getElementById('privacy-policy-accept').innerHTML);
+        Lightbox.show(document.getElementById('privacy-policy-accept').innerHTML);
     },
 
     showPrivacyPolicy: function() {
-        Kurve.Lightbox.show(document.getElementById('privacy-policy').innerHTML);
+        Lightbox.show(document.getElementById('privacy-policy').innerHTML);
 
         setTimeout(function() {
-            document.body.addEventListener('click', Kurve.Privacypolicy.onPrivacyPolicyClose, false);
+            document.body.addEventListener('click', Privacypolicy.onPrivacyPolicyClose, false);
         }, 500);
 
         var matomoOptOutIframe = document.getElementById('lightbox-content').querySelector('#privacy-policy-matomo-opt-out');
@@ -53,18 +56,18 @@ Kurve.Privacypolicy = {
     },
 
     onPrivacyPolicyClose: function() {
-        Kurve.Lightbox.hide();
+        Lightbox.hide();
 
-        if (!Kurve.Storage.has('kurve.privacy-policy-accepted')) {
-            Kurve.Privacypolicy.showAcceptPrivacyPolicy();
+        if (!Storage.has('kurve.privacy-policy-accepted')) {
+            Privacypolicy.showAcceptPrivacyPolicy();
         }
 
-        document.body.removeEventListener('click', Kurve.Privacypolicy.onPrivacyPolicyClose);
+        document.body.removeEventListener('click', Privacypolicy.onPrivacyPolicyClose);
     },
 
     onPrivacyPolicyAccepted: function() {
-        Kurve.Storage.set('kurve.privacy-policy-accepted', 'yes');
-        Kurve.Lightbox.hide();
+        Storage.set('kurve.privacy-policy-accepted', 'yes');
+        Lightbox.hide();
 
         this.enableTracking();
     },

@@ -1,38 +1,76 @@
 /**
  * Main entry point for Kurve application
- * ES Module wrapper for the original concatenated scripts
+ * ES Module implementation with named exports
  */
 
-// Import polyfills and global setup
+// Import polyfills first
 import './window.js';
 
 // Import SCSS
 import '../scss/main.scss';
 
-// Import Kurve first to create the global window.Kurve object
-import './Kurve.js';
+// Import all modules with named exports
+import { Kurve } from './Kurve.js';
+import { Utility } from './KurveUtility.js';
+import { Config } from './KurveConfig.js';
+import { Storage } from './KurveStorage.js';
+import { Sound } from './KurveSound.js';
+import { Theming } from './KurveTheming.js';
+import { Factory } from './KurveFactory.js';
+import { ControllerManager } from './KurveControllermanager.js';
+import { Menu } from './KurveMenu.js';
+import { Game } from './KurveGame.js';
+import { Field } from './KurveField.js';
+import { Superpower } from './KurveSuperpower.js';
+import { Superpowerconfig } from './KurveSuperpowerconfig.js';
+import { Curve } from './KurveCurve.js';
+import { Point } from './KurvePoint.js';
+import { Player } from './KurvePlayer.js';
+import { Lightbox } from './KurveLightbox.js';
+import { Piwik } from './KurvePiwik.js';
+import { Privacypolicy } from './KurvePrivacypolicy.js';
 
-// Import all Kurve modules in the correct order
-// The order matters because later modules depend on earlier ones
-import './KurveUtility.js';
-import './KurveConfig.js';
-import './KurveStorage.js';
-import './KurveSound.js';
-import './KurveTheming.js';
-import './KurveFactory.js';
-import './KurveMenu.js';
-import './KurveGame.js';
-import './KurveField.js';
-import './KurveSuperpower.js';
-import './KurveSuperpowerconfig.js';
-import './KurveCurve.js';
-import './KurvePoint.js';
-import './KurvePlayer.js';
-import './KurveLightbox.js';
-import './KurvePiwik.js';
-import './KurvePrivacypolicy.js';
+// Attach all modules to Kurve object for cross-module access
+// This enables references like Kurve.Sound, Kurve.Game, etc.
+Kurve.Utility = Utility;
+Kurve.Config = Config;
+Kurve.Storage = Storage;
+Kurve.Sound = Sound;
+Kurve.Theming = Theming;
+Kurve.Factory = Factory;
+Kurve.ControllerManager = ControllerManager;
+Kurve.Menu = Menu;
+Kurve.Game = Game;
+Kurve.Field = Field;
+Kurve.Superpower = Superpower;
+Kurve.Superpowerconfig = Superpowerconfig;
+Kurve.Curve = Curve;
+Kurve.Point = Point;
+Kurve.Player = Player;
+Kurve.Lightbox = Lightbox;
+Kurve.Piwik = Piwik;
+Kurve.Privacypolicy = Privacypolicy;
 
-// Kurve and u are now available globally via window.Kurve and window.u
+// Resolve circular dependencies by attaching references directly
+// Menu and Game can now reference each other and Kurve through these properties
+Menu.Kurve = Kurve;
+Menu.Game = Game;
+Game.Kurve = Kurve;
+Game.Menu = Menu;
+Field.Game = Game;
 
-// Initialize Kurve when DOM is ready, ensuring all modules are loaded
-document.addEventListener('DOMContentLoaded', window.Kurve.init.bind(window.Kurve));
+// Create global helper for onclick handlers in HTML
+window.menuOnPreviousSuperPowerClicked = (event, playerId) => Menu.onPreviousSuperPowerClicked(event, playerId);
+window.menuOnNextSuperPowerClicked = (event, playerId) => Menu.onNextSuperPowerClicked(event, playerId);
+window.toggleTheme = () => Theming.toggleTheme();
+window.toggleSound = () => Sound.toggleSound();
+window.showPrivacyPolicy = () => Privacypolicy.showPrivacyPolicy();
+window.onPrivacyPolicyAccepted = () => Privacypolicy.onPrivacyPolicyAccepted();
+window.onCreditsClicked = () => Sound.onCreditsClicked();
+window.onCreditsCloseClicked = () => Sound.onCreditsCloseClicked();
+window.reload = () => Kurve.reload();
+
+// Initialize the game when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    Kurve.init();
+});

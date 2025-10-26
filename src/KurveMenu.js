@@ -18,29 +18,46 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Kurve.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this.Kurve.  If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
 'use strict';
 
-Kurve.Menu = {
+import { Sound } from './KurveSound.js';
+import { Config } from './KurveConfig.js';
+import { Superpowerconfig } from './KurveSuperpowerconfig.js';
+import { Factory } from './KurveFactory.js';
+import { ControllerManager } from './KurveControllermanager.js';
+import { Utility } from './KurveUtility.js';
+
+// Will be set by main.js to avoid circular dependencies
+let Kurve = null;
+let Game = null;
+
+export const Menu = {
     
     boundOnKeyDown: null,
     audioPlayer: null,
     scrollKeys: ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Spacebar', ' '],
+    qrCodeInstance: null,
+    
+    // Self-reference for event handlers
+    self: null,
     
     init: function() {
+        this.self = this;
         this.initPlayerMenu();
         this.addWindowListeners();
         this.addMouseListeners();
         this.initMenuMusic();
+        this.initControllers();
     },
         
     initPlayerMenu: function() {
         var playerHTML = '';
         
-        Kurve.players.forEach(function(player) {
+        this.Kurve.players.forEach((player) => {
             playerHTML += player.renderMenuItem();
         });
         
@@ -56,12 +73,12 @@ Kurve.Menu = {
         var playerItems = document.getElementById('menu-players-list').children;
 
         for (var i=0; i < playerItems.length; i++) {
-            playerItems[i].addEventListener('click', this.onPlayerItemClicked, false);
+            playerItems[i].addEventListener('click', this.onPlayerItemClicked.bind(this), false);
         }
     },
 
     initMenuMusic: function() {
-        this.audioPlayer = Kurve.Sound.getAudioPlayer();
+        this.audioPlayer = this.Kurve.Sound.getAudioPlayer();
         this.audioPlayer.play('menu-music', {loop: true, background: true, fade: 2000, volume: 1});
     },
     
@@ -70,8 +87,9 @@ Kurve.Menu = {
     },
 
     onPlayerItemClicked: function(event) {
-        Kurve.Menu.audioPlayer.play('menu-navigate');
-        Kurve.Menu.togglePlayerActivation(this.id);
+        this.Kurve.Menu.audioPlayer.play('menu-navigate');
+        const playerId = event.currentTarget.id;
+        this.Kurve.Menu.togglePlayerActivation(playerId);
     },
     
     onKeyDown: function(event) {
@@ -79,139 +97,269 @@ Kurve.Menu = {
             return; //Command or Ctrl pressed
         }
 
-        if (Kurve.Menu.scrollKeys.indexOf(event.key) >= 0) {
+        if (this.Kurve.Menu.scrollKeys.indexOf(event.key) >= 0) {
             event.preventDefault(); //prevent page scrolling
         }
 
         if (event.keyCode === 32) {
-            Kurve.Menu.onSpaceDown();
+            this.Kurve.Menu.onSpaceDown();
         }
 
-        Kurve.players.forEach(function(player) {
+        this.Kurve.players.forEach((player) => {
             if ( player.isKeyLeft(event.keyCode) ) {
-                Kurve.Menu.activatePlayer(player.getId());
-                Kurve.Menu.audioPlayer.play('menu-navigate');
+                this.Kurve.Menu.activatePlayer(player.getId());
+                this.Kurve.Menu.audioPlayer.play('menu-navigate');
             } else if ( player.isKeyRight(event.keyCode) ) {
-                Kurve.Menu.deactivatePlayer(player.getId());
-                Kurve.Menu.audioPlayer.play('menu-navigate');
+                this.Kurve.Menu.deactivatePlayer(player.getId());
+                this.Kurve.Menu.audioPlayer.play('menu-navigate');
             } else if ( player.isKeySuperpower(event.keyCode) ) {
-                Kurve.Menu.nextSuperpower(player.getId());
-                Kurve.Menu.audioPlayer.play('menu-navigate');
+                this.Kurve.Menu.nextSuperpower(player.getId());
+                this.Kurve.Menu.audioPlayer.play('menu-navigate');
             }
         });
     },
     
     onSpaceDown: function() {
-        Kurve.players.forEach(function(player) {
+        this.Kurve.players.forEach((player) => {
             if ( player.isActive() ) {
-                Kurve.Game.curves.push(
-                    new Kurve.Curve(player, Kurve.Game, Kurve.Field, Kurve.Config.Curve, Kurve.Sound.getAudioPlayer())
+                this.Kurve.Game.curves.push(
+                    new this.Kurve.Curve(player, this.Kurve.Game, this.Kurve.Field, this.Kurve.Config.Curve, this.Kurve.Sound.getAudioPlayer())
                 );    
             }
         });
         
-        if (Kurve.Game.curves.length <= 1) {
-            Kurve.Game.curves = [];
-            Kurve.Menu.audioPlayer.play('menu-error', {reset: true});
+        if (this.Kurve.Game.curves.length <= 1) {
+            this.Kurve.Game.curves = [];
+            this.Kurve.Menu.audioPlayer.play('menu-error', {reset: true});
 
-            u.addClass('shake', 'menu');
+            Utility.addClass('shake', 'menu');
 
             setTimeout(function() {
-                u.removeClass('shake', 'menu');
+                Utility.removeClass('shake', 'menu');
             }, 450); //see Sass shake animation in _mixins.scss
 
             return; //not enough players are ready
         }
 
-        Kurve.Field.init();
-        Kurve.Menu.audioPlayer.pause('menu-music', {fade: 1000});
-        Kurve.Game.startGame();
+        this.Kurve.Field.init();
+        this.Kurve.Menu.audioPlayer.pause('menu-music', {fade: 1000});
+        this.Kurve.Game.startGame();
 
-        u.addClass('hidden', 'layer-menu');
-        u.removeClass('hidden', 'layer-game');
+        Utility.addClass('hidden', 'layer-menu');
+        Utility.removeClass('hidden', 'layer-game');
     },
 
     onNextSuperPowerClicked: function(event, playerId) {
         event.stopPropagation();
-        Kurve.Menu.audioPlayer.play('menu-navigate');
-        Kurve.Menu.nextSuperpower(playerId);
+        this.Kurve.Menu.audioPlayer.play('menu-navigate');
+        this.Kurve.Menu.nextSuperpower(playerId);
     },
 
     onPreviousSuperPowerClicked: function(event, playerId) {
         event.stopPropagation();
-        Kurve.Menu.audioPlayer.play('menu-navigate');
-        Kurve.Menu.previousSuperpower(playerId);
+        this.Kurve.Menu.audioPlayer.play('menu-navigate');
+        this.Kurve.Menu.previousSuperpower(playerId);
     },
 
     nextSuperpower: function(playerId) {
-        var player = Kurve.getPlayer(playerId);
+        var player = this.Kurve.getPlayer(playerId);
         var count = 0;
         var superpowerType = '';
 
-        for (var i in Kurve.Superpowerconfig.types) {
+        for (var i in this.Kurve.Superpowerconfig.types) {
             count++;
-            if ( !(Kurve.Superpowerconfig.types[i] === player.getSuperpower().getType() ) ) continue;
+            if ( !(this.Kurve.Superpowerconfig.types[i] === player.getSuperpower().getType() ) ) continue;
 
-            if ( Object.keys(Kurve.Superpowerconfig.types).length === count) {
-                superpowerType = Object.keys(Kurve.Superpowerconfig.types)[0];
+            if ( Object.keys(this.Kurve.Superpowerconfig.types).length === count) {
+                superpowerType = Object.keys(this.Kurve.Superpowerconfig.types)[0];
             } else {
-                superpowerType = Object.keys(Kurve.Superpowerconfig.types)[count];
+                superpowerType = Object.keys(this.Kurve.Superpowerconfig.types)[count];
             }
 
             break;
         }
 
-        player.setSuperpower( Kurve.Factory.getSuperpower(superpowerType) );
+        player.setSuperpower( this.Kurve.Factory.getSuperpower(superpowerType) );
     },
 
     previousSuperpower: function(playerId) {
-        var player = Kurve.getPlayer(playerId);
+        var player = this.Kurve.getPlayer(playerId);
         var count = 0;
         var superpowerType = '';
 
-        for (var i in Kurve.Superpowerconfig.types) {
+        for (var i in this.Kurve.Superpowerconfig.types) {
             count++;
-            if ( !(Kurve.Superpowerconfig.types[i] === player.getSuperpower().getType() ) ) continue;
+            if ( !(this.Kurve.Superpowerconfig.types[i] === player.getSuperpower().getType() ) ) continue;
 
             if ( 1 === count) {
-                superpowerType = Object.keys(Kurve.Superpowerconfig.types)[Object.keys(Kurve.Superpowerconfig.types).length - 1];
+                superpowerType = Object.keys(this.Kurve.Superpowerconfig.types)[Object.keys(this.Kurve.Superpowerconfig.types).length - 1];
             } else {
-                superpowerType = Object.keys(Kurve.Superpowerconfig.types)[count - 2];
+                superpowerType = Object.keys(this.Kurve.Superpowerconfig.types)[count - 2];
             }
 
             break;
         }
 
-        player.setSuperpower( Kurve.Factory.getSuperpower(superpowerType) );
+        player.setSuperpower( this.Kurve.Factory.getSuperpower(superpowerType) );
     },
 
     activatePlayer: function(playerId) {
-        if ( Kurve.getPlayer(playerId).isActive() ) return;
+        if ( this.Kurve.getPlayer(playerId).isActive() ) return;
 
-        Kurve.getPlayer(playerId).setIsActive(true);
+        this.Kurve.getPlayer(playerId).setIsActive(true);
 
-        u.removeClass('inactive', playerId);
-        u.addClass('active', playerId);
+        Utility.removeClass('inactive', playerId);
+        Utility.addClass('active', playerId);
     },
 
     deactivatePlayer: function(playerId) {
-        if ( !Kurve.getPlayer(playerId).isActive() ) return;
+        if ( !this.Kurve.getPlayer(playerId).isActive() ) return;
 
-        Kurve.getPlayer(playerId).setIsActive(false);
+        this.Kurve.getPlayer(playerId).setIsActive(false);
 
-        u.removeClass('active', playerId);
-        u.addClass('inactive', playerId);
+        Utility.removeClass('active', playerId);
+        Utility.addClass('inactive', playerId);
     },
 
     togglePlayerActivation: function(playerId) {
-        if ( Kurve.getPlayer(playerId).isActive() ) {
-            Kurve.Menu.deactivatePlayer(playerId);
+        if ( this.Kurve.getPlayer(playerId).isActive() ) {
+            this.Kurve.Menu.deactivatePlayer(playerId);
         } else {
-            Kurve.Menu.activatePlayer(playerId);
+            this.Kurve.Menu.activatePlayer(playerId);
         }
     },
 
     requestFullScreen: function() {
         document.body.webkitRequestFullScreen();
+    },
+
+    initControllers: function() {
+        if (!this.Kurve.ControllerManager) return;
+
+        this.Kurve.ControllerManager.init();
+
+        this.Kurve.ControllerManager.onPeerId(function(peerId) {
+            this.updateMobileUrl(peerId);
+        }.bind(this));
+
+        this.Kurve.ControllerManager.onConnect(function(controllerId) {
+            console.log('Controller connected:', controllerId);
+            // Controller will select a player via color picker, so don't assign yet
+            this.updateConnectionStatus();
+        }.bind(this));
+
+        this.Kurve.ControllerManager.onDisconnect(function(controllerId) {
+            console.log('Controller disconnected:', controllerId);
+            const playerIndex = this.Kurve.ControllerManager.getPlayerIndexForController(controllerId);
+            if (this.Kurve.players[playerIndex]) {
+                this.Kurve.players[playerIndex].setControllerConnected(false);
+                const playerId = this.Kurve.players[playerIndex].getId();
+                if (playerId) {
+                    this.Kurve.Menu.deactivatePlayer(playerId);
+                }
+            }
+            // Clean up the mapping
+            this.Kurve.ControllerManager.controllerToPlayerMap.delete(controllerId);
+            this.updateConnectionStatus();
+        }.bind(this));
+
+        this.Kurve.ControllerManager.onColorSelect(function(controllerId, colorIndex) {
+            console.log('Color selected:', controllerId, colorIndex);
+            // Map the controller to the selected player
+            if (colorIndex < this.Kurve.players.length) {
+                this.Kurve.ControllerManager.mapControllerToPlayer(controllerId, colorIndex);
+                this.Kurve.Menu.audioPlayer.play('menu-navigate');
+                this.Kurve.Menu.activatePlayer(this.Kurve.players[colorIndex].getId());
+                this.Kurve.players[colorIndex].setControllerConnected(true);
+                
+                // Send confirmation back to controller to show game controls
+                const conn = this.Kurve.ControllerManager.connections.get(controllerId);
+                if (conn && conn.open) {
+                    conn.send({
+                        type: 'assign-id',
+                        controllerId: controllerId
+                    });
+                }
+            }
+        }.bind(this));
+
+        this.Kurve.ControllerManager.onStartNextRound(function(controllerId) {
+            console.log('Start next round requested by controller:', controllerId);
+            // Only start if not already started
+            if (!this.Kurve.Game.isRoundStarted) {
+                this.Kurve.Game.startNewRound();
+            }
+        });
+
+        this.Kurve.ControllerManager.onStartGame(function(controllerId) {
+            console.log('Start game requested by controller:', controllerId);
+            // Trigger the same logic as pressing space
+            this.Kurve.Menu.onSpaceDown();
+        });
+
+        var controllerInputStates = {};
+
+        this.Kurve.ControllerManager.onInput(function(controllerId, data) {
+            const playerIndex = this.Kurve.ControllerManager.getPlayerIndexForController(controllerId);
+            if (this.Kurve.players[playerIndex]) {
+                if (!controllerInputStates[controllerId]) {
+                    controllerInputStates[controllerId] = { left: false, right: false, superpower: false };
+                }
+
+                if (data.action === 'left') {
+                    controllerInputStates[controllerId].left = data.value;
+                } else if (data.action === 'right') {
+                    controllerInputStates[controllerId].right = data.value;
+                } else if (data.action === 'superpower') {
+                    controllerInputStates[controllerId].superpower = data.value;
+                }
+
+                this.Kurve.players[playerIndex].setControllerInput(
+                    controllerInputStates[controllerId].left,
+                    controllerInputStates[controllerId].right,
+                    controllerInputStates[controllerId].superpower
+                );
+            }
+        });
+    },
+
+    updateMobileUrl: function(peerId) {
+        var pathname = window.location.pathname;
+        if (pathname.endsWith('index.html')) {
+            pathname = pathname.replace('index.html', '');
+        } else if (!pathname.endsWith('/')) {
+            pathname += '/';
+        }
+        var baseUrl = window.location.origin + pathname;
+        var mobileUrl = baseUrl + 'mobile-controller.html?peer=' + peerId;
+
+        var qrCodeDiv = document.getElementById('qr-code');
+        if (qrCodeDiv) {
+            if (this.qrCodeInstance) {
+                qrCodeDiv.innerHTML = '';
+            }
+
+            if (typeof QRCode !== 'undefined') {
+                this.qrCodeInstance = new QRCode(qrCodeDiv, {
+                    text: mobileUrl,
+                    width: 150,
+                    height: 150,
+                    colorDark: '#000000',
+                    colorLight: '#ffffff'
+                });
+            } else {
+                setTimeout(function() {
+                    this.updateMobileUrl(peerId);
+                }.bind(this), 100);
+            }
+        }
+    },
+
+    updateConnectionStatus: function() {
+        var statusElement = document.getElementById('controller-status');
+        if (!statusElement || !this.Kurve.ControllerManager) return;
+
+        var connectedCount = this.Kurve.ControllerManager.getConnectedCount();
+        statusElement.textContent = connectedCount + ' controller' + (connectedCount !== 1 ? 's' : '') + ' connected';
     },
 };

@@ -24,14 +24,19 @@
 
 'use strict';
 
-var Kurve = {
+import { Utility } from './KurveUtility.js';
+import { Config } from './KurveConfig.js';
+import { Player } from './KurvePlayer.js';
+import { Piwik } from './KurvePiwik.js';
+
+export const Kurve = {
     
     players: [],
     playersById: {},
     
     init: function() {
-        if (u.isSafari()) u.addClass('is-safari', 'app');
-        if (u.isIE())  u.addClass('is-ie', 'app');
+        if (Utility.isSafari()) Utility.addClass('is-safari', 'app');
+        if (Utility.isIE())  Utility.addClass('is-ie', 'app');
 
         this.Theming.init();
         this.Sound.init();
@@ -41,16 +46,16 @@ var Kurve = {
         this.Lightbox.init();
         this.Privacypolicy.init();
 
-        u.removeClass('hidden', 'app');
+        Utility.removeClass('hidden', 'app');
     },
         
     initPlayers: function() {
-        Kurve.Config.Players.forEach(function(player) {
-            var player = new Kurve.Player(player.id, player.keyLeft, player.keyRight, player.keySuperpower);
+        Config.Players.forEach(function(player) {
+            var player = new Player(player.id, player.keyLeft, player.keyRight, player.keySuperpower);
 
-            Kurve.players.push(player);
-            Kurve.playersById[player.getId()] = player;
-        });
+            this.players.push(player);
+            this.playersById[player.getId()] = player;
+        }.bind(this));
     },
 
     getPlayer: function(playerId) {
@@ -62,11 +67,7 @@ var Kurve = {
     },
 
     onUnload: function() {
-        Kurve.Piwik.trackPageView();
+        Piwik.trackPageView();
     }
 
 };
-
-window.Kurve = Kurve;
-
-// DOMContentLoaded listener moved to main.js to ensure all modules are loaded first
