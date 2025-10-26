@@ -34,6 +34,7 @@ Kurve.ControllerManager = {
     onPeerIdCallback: null,
     onColorSelectCallback: null,
     onStartNextRoundCallback: null,
+    onStartGameCallback: null,
     nextControllerId: 0,
     peerId: null,
     
@@ -77,6 +78,8 @@ Kurve.ControllerManager = {
                     this.onColorSelectCallback(controllerId, data.colorIndex);
                 } else if (data.type === 'start-next-round' && this.onStartNextRoundCallback) {
                     this.onStartNextRoundCallback(controllerId);
+                } else if (data.type === 'start-game' && this.onStartGameCallback) {
+                    this.onStartGameCallback(controllerId);
                 }
             }.bind(this));
             
@@ -120,6 +123,10 @@ Kurve.ControllerManager = {
     
     onStartNextRound: function(callback) {
         this.onStartNextRoundCallback = callback;
+    },
+    
+    onStartGame: function(callback) {
+        this.onStartGameCallback = callback;
     },
     
     mapControllerToPlayer: function(controllerId, playerIndex) {

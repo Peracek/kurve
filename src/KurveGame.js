@@ -136,7 +136,20 @@ Kurve.Game = {
         Kurve.Piwik.trackPageVariable(2, 'number_of_players', this.players.length);
         Kurve.Piwik.trackPageView('Game');
         
+        this.notifyControllersGameStarted();
         this.startNewRound.bind(this);
+    },
+    
+    notifyControllersGameStarted: function() {
+        if (!Kurve.ControllerManager) return;
+        
+        Kurve.ControllerManager.connections.forEach(function(conn, controllerId) {
+            if (conn && conn.open) {
+                conn.send({
+                    type: 'game-started'
+                });
+            }
+        });
     },
     
     renderPlayerScores: function() {

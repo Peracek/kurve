@@ -211,6 +211,54 @@
         #next-round-button:active {
             transform: scale(0.98);
         }
+
+        #start-game-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 200;
+        }
+
+        #start-game-container {
+            text-align: center;
+            padding: 30px;
+        }
+
+        #start-game-container h2 {
+            color: white;
+            font-size: 36px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        #start-game-button {
+            padding: 15px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 3px solid white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #start-game-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #start-game-button:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -238,6 +286,13 @@
         <div id="next-round-container">
             <h2>Round Ended!</h2>
             <button id="next-round-button">Next Round</button>
+        </div>
+    </div>
+
+    <div id="start-game-screen" style="display: none;">
+        <div id="start-game-container">
+            <h2>Ready to Play?</h2>
+            <button id="start-game-button">Start Game</button>
         </div>
     </div>
 
@@ -374,6 +429,40 @@
             }
         }
         
+        function showStartGameScreen() {
+            const colorPicker = document.getElementById('color-picker');
+            const startGameScreen = document.getElementById('start-game-screen');
+            const controls = document.getElementById('controls');
+            const instructions = document.getElementById('instructions');
+            
+            colorPicker.style.display = 'none';
+            controls.style.display = 'none';
+            instructions.style.display = 'none';
+            startGameScreen.style.display = 'flex';
+        }
+        
+        function hideStartGameScreen() {
+            const colorPicker = document.getElementById('color-picker');
+            const startGameScreen = document.getElementById('start-game-screen');
+            const controls = document.getElementById('controls');
+            const instructions = document.getElementById('instructions');
+            
+            colorPicker.style.display = 'none';
+            startGameScreen.style.display = 'none';
+            controls.style.display = 'flex';
+            instructions.style.display = 'block';
+        }
+        
+        function sendStartGame() {
+            if (hostConnection && hostConnection.open) {
+                hostConnection.send({
+                    type: 'start-game'
+                });
+                vibrate(20);
+                hideStartGameScreen();
+            }
+        }
+        
         function initController() {
             if (!hostPeerId) {
                 updateStatus('Error: No peer ID provided in URL', 'error');
@@ -399,9 +488,11 @@
                         myControllerId = data.controllerId;
                         updateStatus('Connected!', 'connected');
                         updatePlayerInfo();
-                        showControls();
+                        showStartGameScreen();
                     } else if (data.type === 'round-ended') {
                         showNextRoundScreen();
+                    } else if (data.type === 'game-started') {
+                        hideStartGameScreen();
                     }
                 });
                 
@@ -487,6 +578,14 @@
         nextRoundButton.addEventListener('touchend', (e) => {
             e.preventDefault();
             sendStartNextRound();
+        });
+        
+        // Start game button events
+        const startGameButton = document.getElementById('start-game-button');
+        startGameButton.addEventListener('click', sendStartGame);
+        startGameButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            sendStartGame();
         });
         
         // Prevent scrolling and zooming

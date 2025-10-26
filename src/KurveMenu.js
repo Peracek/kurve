@@ -275,6 +275,12 @@ Kurve.Menu = {
             }
         });
 
+        Kurve.ControllerManager.onStartGame(function(controllerId) {
+            console.log('Start game requested by controller:', controllerId);
+            // Trigger the same logic as pressing space
+            Kurve.Menu.onSpaceDown();
+        });
+
         var controllerInputStates = {};
 
         Kurve.ControllerManager.onInput(function(controllerId, data) {
