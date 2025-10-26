@@ -137,7 +137,7 @@ Kurve.Game = {
         Kurve.Piwik.trackPageView('Game');
         
         this.notifyControllersGameStarted();
-        this.startNewRound.bind(this);
+        this.startNewRound();
     },
     
     notifyControllersGameStarted: function() {
