@@ -24,14 +24,18 @@
 
 'use strict';
 
-Kurve.Theming = {
+import { Storage } from './KurveStorage.js';
+import { Config } from './KurveConfig.js';
+import { Utility } from './KurveUtility.js';
+
+export const Theming = {
     currentTheme: 'dark',
 
     init: function() {
-        if (Kurve.Storage.has('kurve.theme')) {
-            this.currentTheme = Kurve.Storage.get('kurve.theme');
+        if (Storage.has('kurve.theme')) {
+            this.currentTheme = Storage.get('kurve.theme');
         } else {
-            Kurve.Storage.set('kurve.theme', this.currentTheme);
+            Storage.set('kurve.theme', this.currentTheme);
         }
 
         if (this.currentTheme === 'default') {
@@ -40,21 +44,21 @@ Kurve.Theming = {
             document.getElementById('change-theme').innerText = 'Lights off';
         }
 
-        u.addClass(this.currentTheme + '-theme', 'app');
+        Utility.addClass(this.currentTheme + '-theme', 'app');
     },
 
     getThemedValue: function(section, value) {
-        if (Kurve.Config['Theming'][this.currentTheme] !== undefined) {
-            return Kurve.Config['Theming'][this.currentTheme][section][value];
+        if (Config['Theming'][this.currentTheme] !== undefined) {
+            return Config['Theming'][this.currentTheme][section][value];
         }
     },
 
     changeTheme: function(theme) {
-        u.removeClass(this.currentTheme + '-theme', 'app');
-        u.addClass(theme + '-theme', 'app');
+        Utility.removeClass(this.currentTheme + '-theme', 'app');
+        Utility.addClass(theme + '-theme', 'app');
 
         this.currentTheme = theme;
-        Kurve.Storage.set('kurve.theme', this.currentTheme);
+        Storage.set('kurve.theme', this.currentTheme);
     },
 
     toggleTheme: function() {

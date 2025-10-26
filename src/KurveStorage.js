@@ -24,7 +24,7 @@
 
 'use strict';
 
-Kurve.Storage = {
+export const Storage = {
     defaultStorage: 'localStorage',
     
     get: function(itemId, storage) {

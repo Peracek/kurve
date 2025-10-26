@@ -24,7 +24,7 @@
 
 'use strict';
 
-Kurve.Piwik = {
+export const Piwik = {
 
     trackPageVariable: function(index, name, value) {
         _paq.push(['setCustomVariable', index, name, value, 'page']);

@@ -8,6 +8,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    copyPublicDir: true,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),

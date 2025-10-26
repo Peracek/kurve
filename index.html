@@ -55,8 +55,8 @@
                                 </div>
 
                                 <div id='menu-settings'>
-                                    <div id='change-theme' class='button' onclick='Kurve.Theming.toggleTheme()'></div>
-                                    <div class='toggle-sound button' onclick='Kurve.Sound.toggleSound()'></div>
+                                    <div id='change-theme' class='button' onclick='toggleTheme()'></div>
+                                    <div class='toggle-sound button' onclick='toggleSound()'></div>
                                     <div class='clear'></div>
                                 </div>
 
@@ -81,8 +81,8 @@
                     <div id='player-scores'></div>
 
                     <div id='game-settings'>
-                        <a id='button-menu' href='#' onclick='Kurve.reload(); return false;' title='Go back to the menu' class='button'>menu</a>
-                        <div class='toggle-sound button' onclick='Kurve.Sound.toggleSound()'></div>
+                        <a id='button-menu' href='#' onclick='reload(); return false;' title='Go back to the menu' class='button'>menu</a>
+                        <div class='toggle-sound button' onclick='toggleSound()'></div>
                     </div>
 
                     <div id='author'>
@@ -90,9 +90,9 @@
                         <span>&nbsp;&Iota;&nbsp;</span>
                         <a href='https://github.com/maechler/kurve/issues' target='_blank'>Report a bug or feature request</a>
                         <span>&nbsp;&Iota;&nbsp;</span>
-                        <a href='#' onclick='Kurve.Privacypolicy.showPrivacyPolicy();'>Privacy policy</a>
+                        <a href='#' onclick='showPrivacyPolicy();'>Privacy policy</a>
                         <span>&nbsp;&Iota;&nbsp;</span>
-                        <a href='#' onclick='Kurve.Sound.onCreditsClicked();'>Credits</a>
+                        <a href='#' onclick='onCreditsClicked();'>Credits</a>
                         <br>
                         <span><a href='https://github.com/maechler/kurve/tags' target='_blank'>v1.5.1</a> &Iota; Copyright &copy; 2014 </span>
                         <a href='http://markusmaechler.ch' target='_blank' rel='author'>Markus Mächler</a>
@@ -101,9 +101,9 @@
                 <div class='clear'></div>
             </div>
             <div id='privacy-policy-accept' class='hidden'>
-                <p>This website uses cookies to improve the services provided to you. By visiting this site you accept its <a href='#' onclick='Kurve.Privacypolicy.showPrivacyPolicy();'>privacy policy</a> and the usage of cookies.</p>
+                <p>This website uses cookies to improve the services provided to you. By visiting this site you accept its <a href='#' onclick='showPrivacyPolicy();'>privacy policy</a> and the usage of cookies.</p>
                 <br>
-                <a href='#' title='Accept privacy policy' onclick='Kurve.Privacypolicy.onPrivacyPolicyAccepted();' class='button'>OK</a>
+                <a href='#' title='Accept privacy policy' onclick='onPrivacyPolicyAccepted();' class='button'>OK</a>
             </div>
             <div id='privacy-policy' class='hidden'>
                 <h2>Privacy policy</h2>
@@ -159,7 +159,7 @@
                 <h3>Music &amp; sound effects</h3>
                 <p>Thanks to <a href='https://twitter.com/Cutting_Class' target='_blank'>Grant Robertson</a> for creating the music and sound effects.</p>
                 <br>
-                <a href='#' title='Close credits overlay' onclick='Kurve.Sound.onCreditsCloseClicked();' class='button'>Close</a>
+                <a href='#' title='Close credits overlay' onclick='onCreditsCloseClicked();' class='button'>Close</a>
             </div>
         </div>
 

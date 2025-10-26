@@ -24,52 +24,52 @@
 
 'use strict';
 
-const Kurve = window.Kurve || {};
-window.Kurve = Kurve;
+class UtilityElement {
+    constructor(element) {
+        this.element = element;
+    }
+}
 
-Kurve.Utility = function(element) {
-    if ( element instanceof String ) {}
-
-    return new Kurve.Utility.Element(element);
+export const Utility = function(element) {
+    if (element instanceof String) {}
+    return new UtilityElement(element);
 };
 
-Kurve.Utility.Element = function(element) {
-    this.element = element;
-};
+Utility.Element = UtilityElement;
 
-Kurve.Utility.round = function(number, digitsAfterComa) {
+Utility.round = function(number, digitsAfterComa) {
     return Math.round(number * Math.pow(10, digitsAfterComa)) / Math.pow(10, digitsAfterComa); 
 };
 
-Kurve.Utility.addClass = function(className, elementId) {
+Utility.addClass = function(className, elementId) {
     var element = document.getElementById(elementId);
     if (element === null) return false;
 
     element.classList.add(className);
 };
-    
-Kurve.Utility.removeClass = function(className, elementId) {
+
+Utility.removeClass = function(className, elementId) {
     var element = document.getElementById(elementId);
     if (element === null) return false;
 
     element.classList.remove(className);
 };
 
-Kurve.Utility.setClassName = function(className, elementId) {
+Utility.setClassName = function(className, elementId) {
     var element = document.getElementById(elementId);
     if (element === null) return false;
 
     element.className = className;        
 };
 
-Kurve.Utility.hasClass = function(className, elementId) {
+Utility.hasClass = function(className, elementId) {
     var element = document.getElementById(elementId);
     if (element === null) return false;
 
     return element.classList.contains(className);
 };
 
-Kurve.Utility.interpolateTwoPoints = function(fromPointX, fromPointY, toPointX, toPointY) {
+Utility.interpolateTwoPoints = function(fromPointX, fromPointY, toPointX, toPointY) {
     var interpolatedPoints = {};
     var dX = toPointX - fromPointX;
     var dY = toPointY - fromPointY;
@@ -81,24 +81,24 @@ Kurve.Utility.interpolateTwoPoints = function(fromPointX, fromPointY, toPointX, 
         var posX = fromPointX + i * stepX;
         var posY = fromPointY + i * stepY;
 
-        u.addPointToMap(interpolatedPoints, posX, posY);
+        Utility.addPointToMap(interpolatedPoints, posX, posY);
     }
 
     return interpolatedPoints;
 };
 
-Kurve.Utility.addPointToMap = function(array, pointX, pointY) {
-    var pointX0 = u.round(pointX, 0);
+Utility.addPointToMap = function(array, pointX, pointY) {
+    var pointX0 = Utility.round(pointX, 0);
     if ( array[pointX0] === undefined ) array[pointX0] = {};
 
-    array[pointX0][u.round(pointY, 0)] = true;
+    array[pointX0][Utility.round(pointY, 0)] = true;
 };
 
-Kurve.Utility.stringToHex = function(string) {
+Utility.stringToHex = function(string) {
     return parseInt(string.substring(1), 16)
 };
 
-Kurve.Utility.merge = function() {
+Utility.merge = function() {
     var base = arguments[0];
 
     for (var i = 1; i < arguments.length; i++) {
@@ -111,17 +111,17 @@ Kurve.Utility.merge = function() {
     return base;
 };
 
-Kurve.Utility.isSafari = function () {
+Utility.isSafari = function () {
     return !!navigator.userAgent.match(/Version\/[\d\.]+.*Safari/);
 };
 
-Kurve.Utility.isIE = function() {
+Utility.isIE = function() {
     var userAgent = window.navigator.userAgent;
 
     return userAgent.indexOf('MSIE ') > 0 || userAgent.indexOf('Trident/') > 0;
 };
 
-Kurve.Utility.debounce = function(debouncedFunction, timeout) {
+Utility.debounce = function(debouncedFunction, timeout) {
     var timeoutId;
 
     return function(...args) {
@@ -132,6 +132,3 @@ Kurve.Utility.debounce = function(debouncedFunction, timeout) {
         }, timeout);
     };
 };
-
-var u = Kurve.Utility;
-window.u = u;

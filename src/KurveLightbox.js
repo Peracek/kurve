@@ -24,7 +24,9 @@
 
 'use strict';
 
-Kurve.Lightbox = {
+import { Utility } from './KurveUtility.js';
+
+export const Lightbox = {
     
     lightboxOverlay: null,
     lightboxContent: null,
@@ -35,12 +37,12 @@ Kurve.Lightbox = {
     },
     
     show: function(htmlContent) {
-        u.removeClass('hidden', 'lightbox-overlay');
+        Utility.removeClass('hidden', 'lightbox-overlay');
         this.lightboxContent.innerHTML = htmlContent;
     },
     
     hide: function() {
-        u.setClassName('hidden', 'lightbox-overlay');
+        Utility.setClassName('hidden', 'lightbox-overlay');
         this.lightboxContent.innerHTML = '';
     }
     

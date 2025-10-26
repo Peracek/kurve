@@ -24,7 +24,7 @@
 
 'use strict';
 
-Kurve.ControllerManager = {
+export const ControllerManager = {
     peer: null,
     connections: new Map(),
     controllerToPlayerMap: new Map(),
