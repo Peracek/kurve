@@ -163,6 +163,54 @@
                 font-size: 16px;
             }
         }
+
+        #next-round-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.9);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 200;
+        }
+
+        #next-round-container {
+            text-align: center;
+            padding: 30px;
+        }
+
+        #next-round-container h2 {
+            color: white;
+            font-size: 36px;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        #next-round-button {
+            padding: 15px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 3px solid white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #next-round-button:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #next-round-button:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 <body>
@@ -183,6 +231,13 @@
         <div id="right-button" class="control-button">
             <div>→</div>
             <div class="label">RIGHT</div>
+        </div>
+    </div>
+
+    <div id="next-round-screen" style="display: none;">
+        <div id="next-round-container">
+            <h2>Round Ended!</h2>
+            <button id="next-round-button">Next Round</button>
         </div>
     </div>
 
@@ -289,6 +344,36 @@
             instructions.style.display = 'block';
         }
         
+        function showNextRoundScreen() {
+            const nextRoundScreen = document.getElementById('next-round-screen');
+            const controls = document.getElementById('controls');
+            const instructions = document.getElementById('instructions');
+            
+            controls.style.display = 'none';
+            instructions.style.display = 'none';
+            nextRoundScreen.style.display = 'flex';
+        }
+        
+        function hideNextRoundScreen() {
+            const nextRoundScreen = document.getElementById('next-round-screen');
+            const controls = document.getElementById('controls');
+            const instructions = document.getElementById('instructions');
+            
+            nextRoundScreen.style.display = 'none';
+            controls.style.display = 'flex';
+            instructions.style.display = 'block';
+        }
+        
+        function sendStartNextRound() {
+            if (hostConnection && hostConnection.open) {
+                hostConnection.send({
+                    type: 'start-next-round'
+                });
+                vibrate(20);
+                hideNextRoundScreen();
+            }
+        }
+        
         function initController() {
             if (!hostPeerId) {
                 updateStatus('Error: No peer ID provided in URL', 'error');
@@ -315,6 +400,8 @@
                         updateStatus('Connected!', 'connected');
                         updatePlayerInfo();
                         showControls();
+                    } else if (data.type === 'round-ended') {
+                        showNextRoundScreen();
                     }
                 });
                 
@@ -393,6 +480,14 @@
         rightButton.addEventListener('mousedown', () => handleRightTouch(true));
         rightButton.addEventListener('mouseup', () => handleRightTouch(false));
         rightButton.addEventListener('mouseleave', () => handleRightTouch(false));
+        
+        // Next round button events
+        const nextRoundButton = document.getElementById('next-round-button');
+        nextRoundButton.addEventListener('click', sendStartNextRound);
+        nextRoundButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            sendStartNextRound();
+        });
         
         // Prevent scrolling and zooming
         document.addEventListener('touchmove', (e) => {

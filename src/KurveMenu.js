@@ -267,6 +267,14 @@ Kurve.Menu = {
             }
         }.bind(this));
 
+        Kurve.ControllerManager.onStartNextRound(function(controllerId) {
+            console.log('Start next round requested by controller:', controllerId);
+            // Only start if not already started
+            if (!Kurve.Game.isRoundStarted) {
+                Kurve.Game.startNewRound();
+            }
+        });
+
         var controllerInputStates = {};
 
         Kurve.ControllerManager.onInput(function(controllerId, data) {

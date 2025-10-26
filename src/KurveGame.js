@@ -236,6 +236,21 @@ Kurve.Game = {
         this.Audio.terminateRound();
         Kurve.Field.resize();
         this.checkForWinner();
+        
+        // Notify controllers that the round has ended
+        this.notifyControllersRoundEnded();
+    },
+    
+    notifyControllersRoundEnded: function() {
+        if (!Kurve.ControllerManager) return;
+        
+        Kurve.ControllerManager.connections.forEach(function(conn, controllerId) {
+            if (conn && conn.open) {
+                conn.send({
+                    type: 'round-ended'
+                });
+            }
+        });
     },
 
     incrementSuperpowers: function() {
