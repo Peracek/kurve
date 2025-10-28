@@ -37,6 +37,26 @@ export const ControllerManager = {
     onStartGameCallback: null,
     nextControllerId: 0,
     peerId: null,
+    peerInitAttempts: 0,
+    maxPeerInitAttempts: 3,
+    peerInitTimeout: null,
+    
+    // Configuration for custom PeerJS server
+    peerConfig: {
+        host: null,  // Will be set from config or env var
+        port: 443,
+        secure: true,
+        path: '/peerjs'
+    },
+    
+    // Set custom PeerJS server configuration
+    setServerConfig: function(config) {
+        if (config.host) this.peerConfig.host = config.host;
+        if (config.port) this.peerConfig.port = config.port;
+        if (config.secure !== undefined) this.peerConfig.secure = config.secure;
+        if (config.path) this.peerConfig.path = config.path;
+        console.log('PeerJS server configured:', this.peerConfig);
+    },
     
     init: function() {
         if (typeof Peer === 'undefined') {
@@ -44,61 +64,163 @@ export const ControllerManager = {
             return;
         }
         
-        this.peer = new Peer();
-        
-        this.peer.on('open', function(id) {
-            this.peerId = id;
-            console.log('Host peer ID:', id);
-            if (this.onPeerIdCallback) {
-                this.onPeerIdCallback(id);
+        this.initPeer();
+    },
+    
+    initPeer: function() {
+        try {
+            // Determine which PeerJS server to use
+            // Priority: Explicit config > Window variable > Environment > Default (peerjs.com)
+            let peerConfig = { ...this.peerConfig };
+            
+            // Check for explicit window configuration
+            if (window.PEERJS_CONFIG) {
+                this.setServerConfig(window.PEERJS_CONFIG);
+                peerConfig = { ...this.peerConfig };
             }
-        }.bind(this));
-        
-        this.peer.on('connection', function(conn) {
-            const controllerId = this.nextControllerId++;
-            this.connections.set(controllerId, conn);
             
-            console.log('Controller connected:', controllerId);
+            // Fallback: if no host specified, try environment or use default
+            if (!peerConfig.host) {
+                peerConfig.host = window.PEERJS_HOST || 'peerjs.com';
+            }
             
-            conn.on('open', function() {
-                conn.send({
-                    type: 'connection-ready',
-                    controllerId: controllerId
-                });
-                
-                if (this.onConnectCallback) {
-                    this.onConnectCallback(controllerId);
-                }
-            }.bind(this));
+            console.log('🔌 Connecting to PeerJS server:', peerConfig.host);
             
-            conn.on('data', function(data) {
-                if (data.type === 'input' && this.onInputCallback) {
-                    this.onInputCallback(controllerId, data.data);
-                } else if (data.type === 'select-color' && this.onColorSelectCallback) {
-                    this.onColorSelectCallback(controllerId, data.colorIndex);
-                } else if (data.type === 'start-next-round' && this.onStartNextRoundCallback) {
-                    this.onStartNextRoundCallback(controllerId);
-                } else if (data.type === 'start-game' && this.onStartGameCallback) {
-                    this.onStartGameCallback(controllerId);
-                }
-            }.bind(this));
-            
-            conn.on('close', function() {
-                console.log('Controller disconnected:', controllerId);
-                this.connections.delete(controllerId);
-                if (this.onDisconnectCallback) {
-                    this.onDisconnectCallback(controllerId);
-                }
-            }.bind(this));
-            
-            conn.on('error', function(err) {
-                console.error('Connection error:', err);
+            // Use custom configuration with reliable STUN servers
+            // and fallback options for PeerJS connectivity
+            this.peer = new Peer({
+                // Use public STUN servers for better connectivity
+                config: {
+                    iceServers: [
+                        { urls: ['stun:stun.l.google.com:19302'] },
+                        { urls: ['stun:stun1.l.google.com:19302'] },
+                        { urls: ['stun:stun2.l.google.com:19302'] },
+                        { urls: ['stun:stun3.l.google.com:19302'] },
+                        { urls: ['stun:stun4.l.google.com:19302'] }
+                    ]
+                },
+                // PeerJS server configuration
+                host: peerConfig.host,
+                port: peerConfig.port,
+                secure: peerConfig.secure,
+                path: peerConfig.path
             });
-        }.bind(this));
+            
+            // Set timeout to detect if peer ID isn't obtained
+            this.peerInitTimeout = setTimeout(() => {
+                if (!this.peerId && this.peerInitAttempts < this.maxPeerInitAttempts) {
+                    console.warn('Peer ID timeout, retrying... (attempt ' + (this.peerInitAttempts + 1) + ')');
+                    this.peerInitAttempts++;
+                    this.retryPeerInit();
+                } else if (!this.peerId) {
+                    console.error('Failed to get Peer ID after ' + this.maxPeerInitAttempts + ' attempts');
+                    console.error('⚠️ This usually means: PeerJS server is unavailable');
+                    console.error('💡 Solutions:');
+                    console.error('  1. Try again later (server may be down)');
+                    console.error('  2. Check if server is accessible: https://' + (peerConfig.host || 'peerjs.com'));
+                    console.error('  3. Check your custom PeerJS server configuration');
+                    console.error('  4. Try a different network/VPN');
+                }
+            }, 5000);
+            
+            this.peer.on('open', function(id) {
+                clearTimeout(this.peerInitTimeout);
+                this.peerId = id;
+                this.peerInitAttempts = 0;
+                console.log('✅ Host peer ID:', id);
+                console.log('✅ Connected to:', peerConfig.host);
+                if (this.onPeerIdCallback) {
+                    this.onPeerIdCallback(id);
+                }
+            }.bind(this));
+            
+            this.peer.on('connection', function(conn) {
+                const controllerId = this.nextControllerId++;
+                this.connections.set(controllerId, conn);
+                
+                console.log('Controller connected:', controllerId);
+                
+                conn.on('open', function() {
+                    conn.send({
+                        type: 'connection-ready',
+                        controllerId: controllerId
+                    });
+                    
+                    if (this.onConnectCallback) {
+                        this.onConnectCallback(controllerId);
+                    }
+                }.bind(this));
+                
+                conn.on('data', function(data) {
+                    if (data.type === 'input' && this.onInputCallback) {
+                        this.onInputCallback(controllerId, data.data);
+                    } else if (data.type === 'select-color' && this.onColorSelectCallback) {
+                        this.onColorSelectCallback(controllerId, data.colorIndex);
+                    } else if (data.type === 'start-next-round' && this.onStartNextRoundCallback) {
+                        this.onStartNextRoundCallback(controllerId);
+                    } else if (data.type === 'start-game' && this.onStartGameCallback) {
+                        this.onStartGameCallback(controllerId);
+                    }
+                }.bind(this));
+                
+                conn.on('close', function() {
+                    console.log('Controller disconnected:', controllerId);
+                    this.connections.delete(controllerId);
+                    if (this.onDisconnectCallback) {
+                        this.onDisconnectCallback(controllerId);
+                    }
+                }.bind(this));
+                
+                conn.on('error', function(err) {
+                    console.error('Connection error:', err);
+                });
+            }.bind(this));
+            
+            this.peer.on('error', function(err) {
+                console.error('❌ Peer error:', err);
+                console.error('Error type:', err.type);
+                console.log('Available error types: network, peer-unavailable, invalid-id, invalid-key, unavailable-id');
+                
+                clearTimeout(this.peerInitTimeout);
+                
+                // Retry on error if attempts remaining
+                if (this.peerInitAttempts < this.maxPeerInitAttempts) {
+                    console.warn('Peer initialization error, retrying... (attempt ' + (this.peerInitAttempts + 1) + ')');
+                    this.peerInitAttempts++;
+                    this.retryPeerInit();
+                } else {
+                    console.error('⚠️ Max retries reached.');
+                    console.error('Try:');
+                    console.error('  1. Refresh the page in a few minutes');
+                    console.error('  2. Check if PeerJS server is running');
+                    console.error('  3. Verify your server configuration');
+                    console.error('  4. Check https://' + (peerConfig.host || 'peerjs.com'));
+                }
+            }.bind(this));
+        } catch (err) {
+            console.error('❌ Error creating Peer:', err);
+            if (this.peerInitAttempts < this.maxPeerInitAttempts) {
+                console.warn('Retrying Peer initialization... (attempt ' + (this.peerInitAttempts + 1) + ')');
+                this.peerInitAttempts++;
+                this.retryPeerInit();
+            }
+        }
+    },
+    
+    retryPeerInit: function() {
+        // Destroy old peer instance
+        if (this.peer) {
+            try {
+                this.peer.destroy();
+            } catch (err) {
+                console.error('Error destroying peer:', err);
+            }
+        }
         
-        this.peer.on('error', function(err) {
-            console.error('Peer error:', err);
-        });
+        // Wait a bit before retrying
+        setTimeout(function() {
+            this.initPeer();
+        }.bind(this), 1000);
     },
     
     onConnect: function(callback) {
@@ -115,6 +237,10 @@ export const ControllerManager = {
     
     onPeerId: function(callback) {
         this.onPeerIdCallback = callback;
+        // If peer ID is already available, call callback immediately
+        if (this.peerId) {
+            callback(this.peerId);
+        }
     },
     
     onColorSelect: function(callback) {
@@ -148,6 +274,9 @@ export const ControllerManager = {
     },
     
     disconnect: function() {
+        if (this.peerInitTimeout) {
+            clearTimeout(this.peerInitTimeout);
+        }
         if (this.peer) {
             this.peer.destroy();
         }

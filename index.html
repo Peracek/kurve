@@ -21,6 +21,22 @@
                 
         <link rel='stylesheet' type='text/css' href='dist/css/main.css' />
         <link rel='icon' type='image/ico' href='dist/images/favicon.ico'>
+        
+        <!-- Configure PeerJS to use our local server -->
+        <script>
+            // Use local PeerJS server deployed with Vercel
+            window.PEERJS_CONFIG = {
+                host: window.location.hostname === 'localhost' 
+                    ? 'localhost' 
+                    : window.location.hostname,
+                port: window.location.hostname === 'localhost' 
+                    ? 5174  // Dev server port
+                    : (window.location.protocol === 'https:' ? 443 : 80),
+                secure: window.location.protocol === 'https:',
+                path: '/api/peerjs/peerjs'
+            };
+            console.log('🔌 PeerJS Config:', window.PEERJS_CONFIG);
+        </script>
     </head>
     <body id='app' class='hidden'>
         <div id='content'>
